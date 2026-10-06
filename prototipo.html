@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="prototipo.css">
+</head>
+<body>
+
+    <!-- COLUNA PRETA (avatar + ajuda) -->
+    <aside class="sidebar">
+        <div class="avatar">
+            <span class="avatar-icon">👤</span>
+        </div>
+
+        <div class="sidebar-bottom">
+            <span class="sidebar-icon">?</span>
+            <span class="sidebar-icon">⚙</span>
+        </div>
+    </aside>
+
+    <!-- MENU LATERAL -->
+    <nav class="sessions">
+        <a href="#" class="menu-item">Visão Geral</a>
+        <a href="#" class="menu-item">Lucros</a>
+        <a href="#" class="menu-item">Demanda</a>
+        <a href="#" class="menu-item">Estoque</a>
+        <a href="#" class="menu-item active">Desempenho</a>
+    </nav>
+
+    <!-- BARRA SUPERIOR -->
+    <header class="tools">
+        <div class="tools-left">
+            <div class="search">
+                <input type="text" placeholder="Pesquisar">
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- Ícone de filtro (SVG inline) -->
+            <button class="filter-btn" aria-label="Filtrar">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="22" height="22"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <line x1="4"  y1="6"  x2="20" y2="6"/>
+                    <line x1="7"  y1="12" x2="17" y2="12"/>
+                    <line x1="10" y1="18" x2="14" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO -->
+    <main class="content">
+
+        <div class="content-header">
+            <h1>Visão Geral</h1>
+            <span class="datetime">06/10/2026 16:33</span>
+        </div>
+
+        <section class="metrics">
+            <div class="card gradient-purple">
+                <p>Avg First Reply Time</p>
+                <h2>30 <small>h</small> 15 <small>min</small></h2>
+            </div>
+            <div class="card gradient-cyan">
+                <p>Avg Full Resolve Time</p>
+                <h2>22 <small>h</small> 40 <small>min</small></h2>
+            </div>
+        </section>
+
+        <section class="chart-main">
+            <div class="chart-header">
+                <h3>Tickets Created vs Tickets Solved</h3>
+                <div class="legend">
+                    <span class="dot cyan"></span> Tickets Solved
+                    <span class="dot purple"></span> Tickets Created
+                </div>
+            </div>
+            <div class="chart-body"></div>
+        </section>
+
+    </main>
+
+</body>
+</html>

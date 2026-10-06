@@ -1,0 +1,275 @@
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background-color: rgb(41, 41, 41);
+    color: white;
+}
+
+/* ===== COLUNA PRETA (50px) ===== */
+.sidebar {
+    background-color: rgb(15, 15, 15);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 50px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0 25px 0;
+    z-index: 1002;
+}
+
+.avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgb(20, 20, 20);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-icon {
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+}
+
+.sidebar-icon {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.sidebar-icon:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ===== MENU LATERAL ===== */
+.sessions {
+    background-color: rgb(30, 30, 30);
+    position: fixed;
+    top: 0;
+    left: 50px;
+    width: 200px;
+    height: 100%;
+    padding: 80px 15px 20px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1001;
+}
+
+.menu-item {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.04);
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+.menu-item:hover,
+.menu-item.active {
+    background-color: rgba(160, 107, 210, 0.25);
+    color: white;
+}
+
+/* ===== BARRA SUPERIOR ===== */
+.tools {
+    background-color: rgb(30, 30, 30);
+    position: fixed;
+    top: 0;
+    left: 250px;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Agrupa pesquisa + filtro no lado esquerdo */
+.tools-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search {
+    position: relative;
+    width: 400px;
+}
+
+.search input {
+    width: 100%;
+    padding: 8px 35px 8px 15px;
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Botão de filtro (SVG) */
+.filter-btn {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+}
+
+.filter-btn:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* ===== CONTEÚDO PRINCIPAL ===== */
+.content {
+    margin-left: 250px;
+    margin-top: 60px;
+    padding: 25px 30px;
+    min-height: calc(100vh - 60px);
+    background: linear-gradient(180deg, rgb(45, 15, 55), rgb(41, 41, 41));
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.content-header h1 {
+    font-size: 28px;
+    font-weight: 500;
+}
+
+.datetime {
+    font-size: 22px;
+}
+
+/* ===== CARDS ===== */
+.metrics {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.card {
+    flex: 1;
+    max-width: 280px;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.card p {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 10px;
+}
+
+.card h2 {
+    font-size: 42px;
+    font-weight: 600;
+}
+
+.card h2 small {
+    font-size: 18px;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.gradient-purple {
+    background: linear-gradient(135deg, #c06ee8, #7a4fbf);
+}
+
+.gradient-cyan {
+    background: linear-gradient(135deg, #6ee0e8, #4a9fd6);
+}
+
+/* ===== GRÁFICO PRINCIPAL ===== */
+.chart-main {
+    background-color: rgb(30, 10, 40);
+    border-radius: 15px;
+    padding: 20px 25px;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    max-width: 585px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.chart-header h3 { font-size: 16px; font-weight: 500; }
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dot {
+    width: 25px;
+    height: 2px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+.dot.cyan { background-color: #4dd4e8; }
+.dot.purple { background-color: #b06ee8; }
+
+.chart-body {
+    flex: 1;
+}

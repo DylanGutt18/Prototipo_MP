@@ -9,31 +9,40 @@
 <body>
 
     <!-- COLUNA PRETA (avatar + ajuda) -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="avatar">
             <span class="avatar-icon">👤</span>
         </div>
 
         <div class="sidebar-bottom">
-            <span class="sidebar-icon">?</span>
-            <span class="sidebar-icon">⚙</span>
+            <button class="sidebar-icon" aria-label="Ajuda">?</button>
+            <button class="sidebar-icon" aria-label="Configurações">⚙</button>
         </div>
     </aside>
 
     <!-- MENU LATERAL -->
-    <nav class="sessions">
-        <a href="#" class="menu-item">Visão Geral</a>
+    <nav class="sessions" id="sessions" aria-label="Seções">
+        <a href="#" class="menu-item active">Visão Geral</a>
         <a href="#" class="menu-item">Lucros</a>
         <a href="#" class="menu-item">Demanda</a>
         <a href="#" class="menu-item">Estoque</a>
-        <a href="#" class="menu-item active">Desempenho</a>
+        <a href="#" class="menu-item">Desempenho</a>
     </nav>
 
     <!-- BARRA SUPERIOR -->
     <header class="tools">
+        <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sessions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="4" y1="12" x2="20" y2="12"/>
+                <line x1="4" y1="18" x2="20" y2="18"/>
+            </svg>
+        </button>
+
         <div class="tools-left">
             <div class="search">
-                <input type="text" placeholder="Pesquisar">
+                <input type="text" placeholder="Pesquisar" aria-label="Pesquisar">
                 <span class="search-icon">🔍</span>
             </div>
 
@@ -54,6 +63,9 @@
             </button>
         </div>
     </header>
+
+    <!-- Fundo escuro atrás do menu (só no celular) -->
+    <div class="overlay" id="overlay"></div>
 
     <!-- CONTEÚDO -->
     <main class="content">
@@ -86,6 +98,59 @@
         </section>
 
     </main>
+
+    <!-- BARRA INFERIOR (só no celular) -->
+    <nav class="bottom-nav" aria-label="Navegação rápida">
+        <a href="#" class="active">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+            Geral
+        </a>
+        <a href="#">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2A2.5 2 0 0 1 9.5 15M12 6.5v1M12 16.5v1"/></svg>
+            Lucros
+        </a>
+        <a href="#">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+            Demanda
+        </a>
+        <a href="#">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>
+            Estoque
+        </a>
+        <a href="#">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1 1 16 0"/><line x1="12" y1="18" x2="16" y2="10"/></svg>
+            Desemp.
+        </a>
+    </nav>
+
+    <script>
+        (function () {
+            var body = document.body;
+            var btn = document.getElementById('menuBtn');
+
+            function setMenu(open) {
+                body.classList.toggle('menu-open', open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                btn.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+            }
+
+            btn.addEventListener('click', function () {
+                setMenu(!body.classList.contains('menu-open'));
+            });
+            document.getElementById('overlay').addEventListener('click', function () {
+                setMenu(false);
+            });
+            document.getElementById('sessions').addEventListener('click', function (e) {
+                if (e.target.closest('.menu-item')) setMenu(false);
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') setMenu(false);
+            });
+            window.matchMedia('(min-width: 769px)').addEventListener('change', function (e) {
+                if (e.matches) setMenu(false);
+            });
+        })();
+    </script>
 
 </body>
 </html>

@@ -1,5 +1,13 @@
+/* ==========================================================================
+   TEMAS
+   Cada tema define, nesta ordem:
+     superfícies · bordas · texto · acento · gráficos · cards · status
+   Trocar de tema = trocar o atributo data-theme no <html>.
+   ========================================================================== */
 
-/* ---------- VIOLETA (padrão, dark) ---------- */
+/* --------------------------------------------------------------------------
+   VIOLETA (padrão · dark)
+   -------------------------------------------------------------------------- */
 :root,
 [data-theme="violeta"] {
   color-scheme: dark;
@@ -11,8 +19,8 @@
   --bg-rail:   #0a0b0f;
   --bg-elev:   #1c2028;
 
-  --line:      rgba(255,255,255,.06);
-  --line-2:    rgba(255,255,255,.10);
+  --line:      rgba(255, 255, 255, .06);
+  --line-2:    rgba(255, 255, 255, .10);
 
   --fg:        #e9eaf0;
   --fg-2:      #a2a6b3;
@@ -23,17 +31,24 @@
   --accent-rgb:  139, 92, 246;
   --accent-fg:   #ffffff;
 
-  --chart-1:    #a78bfa;               
-  --chart-2:    #22d3ee;                    
-  --chart-grid: rgba(255,255,255,.06);
-  --chart-label: rgba(255,255,255,.35);
+  --chart-1:    #a78bfa;
+  --chart-2:    #22d3ee;
+  --chart-3:    #f472b6;
+  --chart-4:    #60a5fa;
+  --chart-grid: rgba(255, 255, 255, .06);
+  --chart-label: rgba(255, 255, 255, .35);
+
+  --c-rgb-1:    139, 92, 246;
+  --c-rgb-2:    34, 211, 238;
 
   --pos:  #22c55e;
   --neg:  #f43f5e;
   --warn: #f59e0b;
 }
 
-/* ---------- CLARO ---------- */
+/* --------------------------------------------------------------------------
+   CLARO
+   -------------------------------------------------------------------------- */
 [data-theme="claro"] {
   color-scheme: light;
 
@@ -44,8 +59,8 @@
   --bg-rail:   #ffffff;
   --bg-elev:   #ffffff;
 
-  --line:      rgba(15,20,30,.08);
-  --line-2:    rgba(15,20,30,.14);
+  --line:      rgba(15, 20, 30, .08);
+  --line-2:    rgba(15, 20, 30, .14);
 
   --fg:        #14171c;
   --fg-2:      #4e5563;
@@ -56,20 +71,26 @@
   --accent-rgb:  79, 70, 229;
   --accent-fg:   #ffffff;
 
-  --chart-1:    #6366f1;                   
-  --chart-2:    #0891b2;                   
-  --chart-grid: rgba(15,20,30,.08);
-  --chart-label: rgba(20,23,28,.45);
+  --chart-1:    #6366f1;
+  --chart-2:    #0891b2;
+  --chart-3:    #db2777;
+  --chart-4:    #0284c7;
+  --chart-grid: rgba(15, 20, 30, .08);
+  --chart-label: rgba(20, 23, 28, .45);
+
+  --c-rgb-1:    79, 70, 229;
+  --c-rgb-2:    8, 145, 178;
 
   --pos:  #16a34a;
   --neg:  #dc2626;
   --warn: #d97706;
 }
 
-/* ---------- QUENTE (âmbar / cobre) ---------- */
+/* --------------------------------------------------------------------------
+   QUENTE (âmbar · cobre)
+   -------------------------------------------------------------------------- */
 [data-theme="quente"] {
   color-scheme: dark;
-
 
   --bg:        #171009;
   --bg-1:      #1f1710;
@@ -78,30 +99,36 @@
   --bg-rail:   #0f0906;
   --bg-elev:   #2b2118;
 
-  --line:      rgba(255,210,160,.09);
-  --line-2:    rgba(255,210,160,.16);
+  --line:      rgba(255, 210, 160, .09);
+  --line-2:    rgba(255, 210, 160, .16);
 
   --fg:        #f7ead3;
   --fg-2:      #c8b49a;
   --fg-3:      #8a7660;
 
-  /* laranja mais saturado e "vivo" */
-  --accent:      #f97316;                
-  --accent-2:    #fb923c;               
+  --accent:      #f97316;
+  --accent-2:    #fb923c;
   --accent-rgb:  249, 115, 22;
   --accent-fg:   #1a0e05;
 
-  --chart-1:    #fbbf24;                 
-  --chart-2:    #f97316;                 
-  --chart-grid: rgba(255,210,160,.08);
-  --chart-label: rgba(247,234,211,.38);
+  --chart-1:    #fb923c;
+  --chart-2:    #fbbf24;
+  --chart-3:    #ef4444;
+  --chart-4:    #f59e0b;
+  --chart-grid: rgba(255, 210, 160, .08);
+  --chart-label: rgba(247, 234, 211, .38);
+
+  --c-rgb-1:    249, 115, 22;
+  --c-rgb-2:    251, 191, 36;
 
   --pos:  #22c55e;
   --neg:  #ef4444;
   --warn: #f59e0b;
 }
 
-/* ---------- AZUL (oceano) ---------- */
+/* --------------------------------------------------------------------------
+   AZUL (oceano)
+   -------------------------------------------------------------------------- */
 [data-theme="azul"] {
   color-scheme: dark;
 
@@ -112,8 +139,8 @@
   --bg-rail:   #060c18;
   --bg-elev:   #182338;
 
-  --line:      rgba(180,215,255,.07);
-  --line-2:    rgba(180,215,255,.13);
+  --line:      rgba(180, 215, 255, .07);
+  --line-2:    rgba(180, 215, 255, .13);
 
   --fg:        #e2ecf5;
   --fg-2:      #93a7bd;
@@ -124,17 +151,24 @@
   --accent-rgb:  56, 189, 248;
   --accent-fg:   #04202e;
 
-  --chart-1:    #818cf8;                
-  --chart-2:    #38bdf8;                
-  --chart-grid: rgba(180,215,255,.07);
-  --chart-label: rgba(226,236,245,.38);
+  --chart-1:    #38bdf8;
+  --chart-2:    #818cf8;
+  --chart-3:    #06b6d4;
+  --chart-4:    #6366f1;
+  --chart-grid: rgba(180, 215, 255, .07);
+  --chart-label: rgba(226, 236, 245, .38);
+
+  --c-rgb-1:    56, 189, 248;
+  --c-rgb-2:    129, 140, 248;
 
   --pos:  #22c55e;
   --neg:  #f43f5e;
   --warn: #f59e0b;
 }
 
-/* ---------- VERDE (esmeralda) ---------- */
+/* --------------------------------------------------------------------------
+   VERDE (esmeralda)
+   -------------------------------------------------------------------------- */
 [data-theme="verde"] {
   color-scheme: dark;
 
@@ -145,8 +179,8 @@
   --bg-rail:   #060d0a;
   --bg-elev:   #172a21;
 
-  --line:      rgba(180,255,215,.07);
-  --line-2:    rgba(180,255,215,.13);
+  --line:      rgba(180, 255, 215, .07);
+  --line-2:    rgba(180, 255, 215, .13);
 
   --fg:        #dff5ea;
   --fg-2:      #8fb8a3;
@@ -157,10 +191,15 @@
   --accent-rgb:  16, 185, 129;
   --accent-fg:   #04170f;
 
-  --chart-1:    #84cc16;                 
-  --chart-2:    #34d399;                   
-  --chart-grid: rgba(180,255,215,.07);
-  --chart-label: rgba(223,245,234,.38);
+  --chart-1:    #34d399;
+  --chart-2:    #84cc16;
+  --chart-3:    #14b8a6;
+  --chart-4:    #22c55e;
+  --chart-grid: rgba(180, 255, 215, .07);
+  --chart-label: rgba(223, 245, 234, .38);
+
+  --c-rgb-1:    16, 185, 129;
+  --c-rgb-2:    132, 204, 22;
 
   --pos:  #22c55e;
   --neg:  #f43f5e;

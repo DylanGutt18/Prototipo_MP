@@ -1,4 +1,8 @@
-
+/* =========================================================
+   Painel — prototipo.js
+   Cuida de: menu mobile, gráfico, count-up, relógio.
+   NÃO cuida de tema/preferências — isso vive em configs.js.
+   ========================================================= */
 (() => {
   'use strict';
 
@@ -50,7 +54,7 @@
   });
 
   /* ---------------------------------------------------------
-     COUNT-UP (números)
+     COUNT-UP
      --------------------------------------------------------- */
   function animateNumber(el, to, { duration = 1100, decimals = 0 } = {}) {
     const from = 0;
@@ -83,7 +87,7 @@
   }
 
   /* ---------------------------------------------------------
-     GRÁFICO 
+     GRÁFICO — cores vêm do tema (CSS vars em themes.css)
      --------------------------------------------------------- */
   const Chart = (() => {
     const host = $('#chart');
@@ -139,22 +143,36 @@
         'aria-hidden': 'true',
       });
 
+      // gradient usa --chart-2 (resolvidos) para o preenchimento
       const defs = svgEl('defs');
       const grad = svgEl('linearGradient', {
         id: 'gAccent', x1: '0', y1: '0', x2: '0', y2: '1',
       });
-      grad.appendChild(svgEl('stop', { offset: '0', 'stop-color': '#4dd4e8', 'stop-opacity': '.28' }));
-      grad.appendChild(svgEl('stop', { offset: '1', 'stop-color': '#4dd4e8', 'stop-opacity': '0' }));
+      grad.appendChild(svgEl('stop', {
+        offset: '0',
+        'stop-color': 'var(--chart-2)',
+        'stop-opacity': '.28',
+      }));
+      grad.appendChild(svgEl('stop', {
+        offset: '1',
+        'stop-color': 'var(--chart-2)',
+        'stop-opacity': '0',
+      }));
       defs.appendChild(grad);
       svg.appendChild(defs);
 
-      const gridG = svgEl('g', { stroke: 'rgba(255,255,255,.06)', 'stroke-width': '1' });
+      // grid — usa --chart-grid
+      const gridG = svgEl('g', {
+        stroke: 'var(--chart-grid)',
+        'stroke-width': '1',
+      });
       for (let i = 0; i <= 4; i++) {
         const y = pad.t + (ih / 4) * i;
         gridG.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: W - pad.r, y2: y }));
       }
       svg.appendChild(gridG);
 
+      // área sob "resolvidos"
       const areaD =
         smoothPath(ptsSolved) +
         ` L ${ptsSolved[ptsSolved.length - 1][0]} ${pad.t + ih}` +
@@ -166,14 +184,25 @@
         area.setAttribute('opacity', '1');
       });
 
+      // linha "criados" — usa --chart-1
       const lineCreated = svgEl('path', {
-        d: smoothPath(ptsCreated), fill: 'none', stroke: '#a78bfa',
-        'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        d: smoothPath(ptsCreated),
+        fill: 'none',
+        stroke: 'var(--chart-1)',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
         'vector-effect': 'non-scaling-stroke',
       });
+
+      // linha "resolvidos" — usa --chart-2
       const lineSolved = svgEl('path', {
-        d: smoothPath(ptsSolved), fill: 'none', stroke: '#4dd4e8',
-        'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        d: smoothPath(ptsSolved),
+        fill: 'none',
+        stroke: 'var(--chart-2)',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
         'vector-effect': 'non-scaling-stroke',
       });
 
@@ -189,19 +218,25 @@
         });
       });
 
+      // pontos na linha "resolvidos"
       ptsSolved.forEach((p, i) => {
         const c = svgEl('circle', {
-          cx: p[0], cy: p[1], r: '0', fill: '#4dd4e8',
-          stroke: 'var(--bg-1)', 'stroke-width': '2',
+          cx: p[0], cy: p[1], r: '0',
+          fill: 'var(--chart-2)',
+          stroke: 'var(--bg-1)',
+          'stroke-width': '2',
         });
         svg.appendChild(c);
         c.style.transition = `r .35s cubic-bezier(.16,1,.3,1) ${0.5 + i * 0.04}s`;
         requestAnimationFrame(() => c.setAttribute('r', '2.8'));
       });
 
+      // labels eixo X — usa --chart-label
       const labelG = svgEl('g', {
-        fill: 'rgba(255,255,255,.35)', 'font-size': '10',
-        'font-family': 'JetBrains Mono, monospace', 'text-anchor': 'middle',
+        fill: 'var(--chart-label)',
+        'font-size': '10',
+        'font-family': 'JetBrains Mono, monospace',
+        'text-anchor': 'middle',
       });
       labels.forEach((lb, i) => {
         if (i % 2 !== 0 && labels.length > 8) return;
@@ -243,6 +278,7 @@
     tick();
     setInterval(tick, 30_000);
   }
+
   document.addEventListener('settings:change', () => Chart.render());
 
   /* ---------------------------------------------------------

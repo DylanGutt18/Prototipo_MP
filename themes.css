@@ -1,0 +1,141 @@
+
+/* ---------- VIOLETA (padrão, dark) ---------- */
+:root,
+[data-theme="violeta"] {
+  color-scheme: dark;
+
+  --bg:        #0e0f13;
+  --bg-1:      #14161c;
+  --bg-2:      #191c23;
+  --bg-3:      #1f232b;
+  --bg-rail:   #0a0b0f;
+  --bg-elev:   #1c2028;
+
+  --line:      rgba(255,255,255,.06);
+  --line-2:    rgba(255,255,255,.10);
+
+  --fg:        #e9eaf0;
+  --fg-2:      #a2a6b3;
+  --fg-3:      #6a6e7c;
+
+  --accent:      #8b5cf6;
+  --accent-2:    #a78bfa;
+  --accent-rgb:  139, 92, 246;
+  --accent-fg:   #ffffff;
+
+  --pos:  #22c55e;
+  --neg:  #f43f5e;
+  --warn: #f59e0b;
+}
+
+/* ---------- CLARO ---------- */
+[data-theme="claro"] {
+  color-scheme: light;
+
+  --bg:        #f4f5f8;
+  --bg-1:      #ffffff;
+  --bg-2:      #eef0f4;
+  --bg-3:      #e3e6ec;
+  --bg-rail:   #ffffff;
+  --bg-elev:   #ffffff;
+
+  --line:      rgba(15,20,30,.08);
+  --line-2:    rgba(15,20,30,.14);
+
+  --fg:        #14171c;
+  --fg-2:      #4e5563;
+  --fg-3:      #868c9b;
+
+  --accent:      #4f46e5;
+  --accent-2:    #6366f1;
+  --accent-rgb:  79, 70, 229;
+  --accent-fg:   #ffffff;
+
+  --pos:  #16a34a;
+  --neg:  #dc2626;
+  --warn: #d97706;
+}
+
+/* ---------- QUENTE (âmbar / cobre) ---------- */
+[data-theme="quente"] {
+  color-scheme: dark;
+
+  --bg:        #16110c;
+  --bg-1:      #1e1811;
+  --bg-2:      #282017;
+  --bg-3:      #33291d;
+  --bg-rail:   #0e0a06;
+  --bg-elev:   #2a2118;
+
+  --line:      rgba(255,215,170,.07);
+  --line-2:    rgba(255,215,170,.13);
+
+  --fg:        #f3e9d9;
+  --fg-2:      #b8a78d;
+  --fg-3:      #7a6b55;
+
+  --accent:      #f59e0b;
+  --accent-2:    #fbbf24;
+  --accent-rgb:  245, 158, 11;
+  --accent-fg:   #1a1206;
+
+  --pos:  #22c55e;
+  --neg:  #ef4444;
+  --warn: #f59e0b;
+}
+
+/* ---------- AZUL (oceano) ---------- */
+[data-theme="azul"] {
+  color-scheme: dark;
+
+  --bg:        #0a1120;
+  --bg-1:      #0f172a;
+  --bg-2:      #16233a;
+  --bg-3:      #1e2f4a;
+  --bg-rail:   #060c18;
+  --bg-elev:   #182338;
+
+  --line:      rgba(180,215,255,.07);
+  --line-2:    rgba(180,215,255,.13);
+
+  --fg:        #e2ecf5;
+  --fg-2:      #93a7bd;
+  --fg-3:      #5f7590;
+
+  --accent:      #38bdf8;
+  --accent-2:    #7dd3fc;
+  --accent-rgb:  56, 189, 248;
+  --accent-fg:   #04202e;
+
+  --pos:  #22c55e;
+  --neg:  #f43f5e;
+  --warn: #f59e0b;
+}
+
+/* ---------- VERDE (esmeralda) ---------- */
+[data-theme="verde"] {
+  color-scheme: dark;
+
+  --bg:        #0a1410;
+  --bg-1:      #0f1e17;
+  --bg-2:      #152a20;
+  --bg-3:      #1c3629;
+  --bg-rail:   #060d0a;
+  --bg-elev:   #172a21;
+
+  --line:      rgba(180,255,215,.07);
+  --line-2:    rgba(180,255,215,.13);
+
+  --fg:        #dff5ea;
+  --fg-2:      #8fb8a3;
+  --fg-3:      #5c8570;
+
+  --accent:      #10b981;
+  --accent-2:    #34d399;
+  --accent-rgb:  16, 185, 129;
+  --accent-fg:   #04170f;
+
+  --pos:  #22c55e;
+  --neg:  #f43f5e;
+  --warn: #f59e0b;
+}

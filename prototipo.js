@@ -1,18 +1,23 @@
+/* ==========================================================================
+   prototipo.js — menu · count-up · gráficos · relógio
+   Gráficos usam viewBox fixo; CSS escala. Sem ResizeObserver.
+   ========================================================================== */
 (() => {
   'use strict';
 
   const $  = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
-  const ns = 'http://www.w3.org/2000/svg';
+  const NS = 'http://www.w3.org/2000/svg';
 
   const svgEl = (tag, attrs = {}) => {
-    const el = document.createElementNS(ns, tag);
+    const el = document.createElementNS(NS, tag);
     for (const k in attrs) el.setAttribute(k, attrs[k]);
     return el;
   };
 
   /* ===== MENU MOBILE ===== */
   const body = document.body;
+
   const setMenu = (open) => {
     body.classList.toggle('menu-open', open);
     const btn = $('#menuBtn');
@@ -66,7 +71,7 @@
     });
   };
 
-  /* ===== LINHA — RECEITA × DESPESA ===== */
+  /* ===== CURVA SUAVE ===== */
   const smoothPath = (pts) => {
     if (pts.length < 2) return '';
     let d = `M ${pts[0][0]} ${pts[0][1]}`;
@@ -82,21 +87,20 @@
     return d;
   };
 
+  /* ===== LINHA — RECEITA × DESPESA ===== */
   const Chart = (() => {
     const host = $('#chart');
     if (!host) return { render() {} };
 
+    const VW = 720, VH = 280;
     const receita = [18, 22, 20, 28, 32, 30, 36, 42, 40, 48, 45, 52];
     const despesa = [14, 16, 15, 20, 22, 24, 26, 28, 30, 32, 34, 36];
     const labels  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
     const build = () => {
-      const rect = host.getBoundingClientRect();
-      const W = Math.max(320, rect.width);
-      const H = Math.max(180, rect.height);
       const pad = { t: 16, r: 8, b: 28, l: 8 };
-      const iw = W - pad.l - pad.r;
-      const ih = H - pad.t - pad.b;
+      const iw = VW - pad.l - pad.r;
+      const ih = VH - pad.t - pad.b;
       const max = Math.max(...receita, ...despesa) * 1.12;
       const stepX = iw / (receita.length - 1);
       const yFor = v => pad.t + ih - (v / max) * ih;
@@ -105,7 +109,7 @@
       const ptsD = despesa.map((v, i) => [pad.l + i * stepX, yFor(v)]);
 
       const svg = svgEl('svg', {
-        viewBox: `0 0 ${W} ${H}`,
+        viewBox: `0 0 ${VW} ${VH}`,
         preserveAspectRatio: 'none',
         'aria-hidden': 'true',
       });
@@ -120,7 +124,7 @@
       const grid = svgEl('g', { stroke: 'var(--chart-grid)', 'stroke-width': '1' });
       for (let i = 0; i <= 4; i++) {
         const y = pad.t + (ih / 4) * i;
-        grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: W - pad.r, y2: y }));
+        grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: VW - pad.r, y2: y }));
       }
       svg.appendChild(grid);
 
@@ -131,7 +135,7 @@
       svg.appendChild(area);
       requestAnimationFrame(() => {
         area.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1) .25s';
-        area.setAttribute('opacity', '1');
+        area.style.opacity = '1';
       });
 
       [['var(--chart-1)', ptsD], ['var(--chart-2)', ptsR]].forEach(([color, pts], idx) => {
@@ -174,7 +178,7 @@
       });
       labels.forEach((lb, i) => {
         if (i % 2 !== 0) return;
-        const t = svgEl('text', { x: pad.l + i * stepX, y: H - 8 });
+        const t = svgEl('text', { x: pad.l + i * stepX, y: VH - 8 });
         t.textContent = lb;
         labelG.appendChild(t);
       });
@@ -186,12 +190,6 @@
       host.innerHTML = '';
       host.appendChild(build());
     };
-
-    let raf = null;
-    new ResizeObserver(() => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(render);
-    }).observe(host);
 
     return { render };
   })();
@@ -247,9 +245,8 @@
 
     const legend = document.createElement('div');
     legend.className = 'donut-legend';
-    const totalVal = data.reduce((s, d) => s + d.value, 0) || 1;
     data.forEach(d => {
-      const pct = Math.round((d.value / totalVal) * 100);
+      const pct = Math.round((d.value / total) * 100);
       const item = document.createElement('span');
       item.innerHTML = `<i style="background:var(${d.color})"></i>${d.label}<b>${pct}%</b>`;
       legend.appendChild(item);
@@ -268,22 +265,24 @@
     const host = document.getElementById(id);
     if (!host) return;
 
-    const rect = host.getBoundingClientRect();
-    const W = Math.max(200, rect.width);
-    const H = Math.max(120, rect.height);
+    const VW = 360, VH = 170;
     const pad = { t: 12, r: 4, b: 24, l: 4 };
-    const iw = W - pad.l - pad.r;
-    const ih = H - pad.t - pad.b;
+    const iw = VW - pad.l - pad.r;
+    const ih = VH - pad.t - pad.b;
     const max = Math.max(...data.map(d => d.value)) * 1.15;
     const step = iw / data.length;
     const bw = step * 0.5;
 
-    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true' });
+    const svg = svgEl('svg', {
+      viewBox: `0 0 ${VW} ${VH}`,
+      preserveAspectRatio: 'none',
+      'aria-hidden': 'true',
+    });
 
     const grid = svgEl('g', { stroke: 'var(--chart-grid)', 'stroke-width': '1' });
     for (let i = 0; i <= 3; i++) {
       const y = pad.t + (ih / 3) * i;
-      grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: W - pad.r, y2: y }));
+      grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: VW - pad.r, y2: y }));
     }
     svg.appendChild(grid);
 
@@ -319,7 +318,7 @@
       'text-anchor': 'middle',
     });
     data.forEach((d, i) => {
-      const t = svgEl('text', { x: pad.l + i * step + step / 2, y: H - 8 });
+      const t = svgEl('text', { x: pad.l + i * step + step / 2, y: VH - 8 });
       t.textContent = d.label;
       labelG.appendChild(t);
     });
@@ -327,12 +326,6 @@
 
     host.innerHTML = '';
     host.appendChild(svg);
-
-    let raf = null;
-    new ResizeObserver(() => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => Bars(id, data));
-    }).observe(host);
   };
 
   /* ===== RELÓGIO ===== */
@@ -352,10 +345,10 @@
   const renderAll = () => {
     Chart.render();
     Donut('donutCategorias', [
-      { label: 'Marketing',     value: 35, color: '--chart-1', center: '' },
-      { label: 'Operacional',   value: 30, color: '--chart-2' },
-      { label: 'Salários',      value: 20, color: '--chart-3' },
-      { label: 'Infraestrutura',value: 15, color: '--chart-4' },
+      { label: 'Marketing',      value: 35, color: '--chart-1' },
+      { label: 'Operacional',    value: 30, color: '--chart-2' },
+      { label: 'Salários',       value: 20, color: '--chart-3' },
+      { label: 'Infraestrutura', value: 15, color: '--chart-4' },
     ]);
     Donut('donutOrigem', [
       { label: 'Recorrente', value: 58, color: '--chart-2' },
@@ -371,12 +364,11 @@
     ]);
   };
 
-  document.addEventListener('settings:change', renderAll);
-
+  /* ===== BOOT ===== */
   const boot = () => {
     runCounters();
     startClock();
-    requestAnimationFrame(renderAll);
+    renderAll();
   };
 
   if (document.readyState === 'loading') {

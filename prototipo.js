@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · count-up · gráficos · relógio
+   prototipo.js — menu · count-up · gráficos · relógio · popovers
    ========================================================================== */
 (() => {
   'use strict';
@@ -44,6 +44,91 @@
     if (e.matches) setMenu(false);
   });
 
+  /* ===== POPOVERS (perfil · ajuda) ===== */
+  const perfilBtn = $('#perfilBtn');
+  const perfilPop = $('#popPerfil');
+  const ajudaBtn  = $('#ajudaBtn');
+  const ajudaPop  = $('#popAjuda');
+
+  function fecharTodos() {
+    [perfilPop, ajudaPop].forEach(p => {
+      if (!p) return;
+      p.classList.remove('is-open');
+      p.setAttribute('aria-hidden', 'true');
+    });
+    [perfilBtn, ajudaBtn].forEach(b => {
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function abrir(pop, btn) {
+    fecharTodos();
+    pop.classList.add('is-open');
+    pop.setAttribute('aria-hidden', 'false');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+
+  perfilBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (perfilPop.classList.contains('is-open')) fecharTodos();
+    else abrir(perfilPop, perfilBtn);
+  });
+
+  ajudaBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (ajudaPop.classList.contains('is-open')) fecharTodos();
+    else abrir(ajudaPop, ajudaBtn);
+  });
+
+  perfilPop?.addEventListener('click', e => e.stopPropagation());
+  ajudaPop?.addEventListener('click', e => e.stopPropagation());
+
+  document.addEventListener('click', fecharTodos);
+
+  document.addEventListener('click', () => pops.forEach(p => p.close()));
+  /* ===== TOAST ===== */
+  const toastHost = document.createElement('div');
+  toastHost.className = 'toast-host';
+  document.body.appendChild(toastHost);
+
+  function mostrarToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `
+      <span class="toast-icon">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none"
+             stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="5 12 10 17 19 7"/>
+        </svg>
+      </span>
+      <span>${msg}</span>
+    `;
+    toastHost.appendChild(t);
+
+    setTimeout(() => {
+      t.classList.add('is-leaving');
+      t.addEventListener('animationend', () => t.remove());
+    }, 2400);
+  }
+
+  /* ===== AÇÕES DOS ITENS DE AJUDA ===== */
+  const ACOES_AJUDA = {
+    docs:    'Abrindo documentação…',
+    suporte: 'Conectando com o suporte…',
+    atalhos: 'Atalhos: Ctrl+K, Ctrl+/, Shift+?',
+    sobre:   'Painel v1.0 · build 2026.10',
+  };
+
+  document.querySelectorAll('.pop-item[data-action]').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const acao = item.dataset.action;
+      const msg = ACOES_AJUDA[acao] || `Ação: ${acao}`;
+      mostrarToast(msg);
+      fecharTodos();
+    });
+  });
   /* ===== COUNT-UP ===== */
   const animateNumber = (el, to, { duration = 1100, decimals = 0 } = {}) => {
     const start = performance.now();

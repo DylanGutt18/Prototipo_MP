@@ -15,7 +15,7 @@
 
   <!-- TRILHA ESQUERDA -->
   <aside class="rail" id="rail">
-    <button class="rail-avatar" aria-label="Perfil">
+    <button class="rail-avatar" id="perfilBtn" aria-label="Perfil" aria-expanded="false" aria-controls="popPerfil">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="8" r="3.5"/>
         <path d="M5 20c1.2-3.4 3.8-5 7-5s5.8 1.6 7 5"/>
@@ -23,7 +23,7 @@
     </button>
 
     <div class="rail-bottom">
-      <button class="rail-btn" aria-label="Ajuda">
+      <button class="rail-btn" id="ajudaBtn" aria-label="Ajuda" aria-expanded="false" aria-controls="popAjuda">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="9"/>
           <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/>
@@ -43,11 +43,11 @@
   <nav class="menu" id="menu" aria-label="Seções">
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-  <path d="M4 20V10M10 20V4M16 20v-7M22 20V8"
-        stroke="currentColor"
-        stroke-width="2.4"
-        stroke-linecap="round"/>
-</svg>
+        <path d="M4 20V10M10 20V4M16 20v-7M22 20V8"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"/>
+      </svg>
       <span class="brand-name">Painel</span>
     </div>
 
@@ -116,7 +116,6 @@
       </div>
     </div>
 
-    <!-- CARDS -->
     <section class="metrics">
       <article class="card">
         <header>
@@ -149,7 +148,6 @@
       </article>
     </section>
 
-    <!-- GRÁFICO PRINCIPAL -->
     <section class="panel">
       <header class="panel-head">
         <div>
@@ -164,7 +162,6 @@
       <div class="chart" id="chart" aria-label="Gráfico de receita vs despesa"></div>
     </section>
 
-    <!-- LINHA DE ANÁLISES -->
     <section class="analytics">
       <article class="panel panel--donut">
         <header class="panel-head">
@@ -222,6 +219,92 @@
       <span>Desemp.</span>
     </a>
   </nav>
+
+  <!-- POPOVER · PERFIL -->
+  <div class="popover popover--perfil" id="popPerfil" role="dialog" aria-hidden="true">
+    <div class="pop-head">
+      <div class="pop-avatar">AC</div>
+      <div class="pop-user">
+        <strong>Acme Corp</strong>
+        <span>contato@acme.com</span>
+      </div>
+    </div>
+
+    <div class="pop-section">
+      <span class="pop-section-label">Dados da empresa</span>
+      <dl class="pop-dl">
+        <div><dt>CNPJ</dt><dd>12.345.678/0001-90</dd></div>
+        <div><dt>Fundada</dt><dd>2018</dd></div>
+        <div><dt>Setor</dt><dd>Tecnologia</dd></div>
+      </dl>
+    </div>
+
+    <div class="pop-section">
+      <span class="pop-section-label">Resumo</span>
+      <dl class="pop-dl">
+        <div><dt>Funcionários</dt><dd>42</dd></div>
+        <div><dt>Clientes ativos</dt><dd>128</dd></div>
+        <div><dt>Receita anual</dt><dd>R$ 1,2M</dd></div>
+      </dl>
+    </div>
+  </div>
+
+    <!-- POPOVER · AJUDA -->
+  <div class="popover popover--ajuda" id="popAjuda" role="dialog" aria-hidden="true">
+    <div class="pop-head">
+      <div class="pop-avatar">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/>
+          <circle cx="12" cy="17" r=".6" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <div class="pop-user">
+        <strong>Precisa de ajuda?</strong>
+        <span>Recursos e suporte</span>
+      </div>
+    </div>
+
+    <ul class="pop-list">
+      <li>
+        <button class="pop-item" data-action="docs">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Documentação
+        </button>
+      </li>
+      <li>
+        <button class="pop-item" data-action="suporte">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Falar com suporte
+        </button>
+      </li>
+      <li>
+        <button class="pop-item" data-action="atalhos">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="12" rx="2"/>
+            <line x1="8" y1="20" x2="16" y2="20"/>
+            <line x1="12" y1="16" x2="12" y2="20"/>
+          </svg>
+          Atalhos de teclado
+        </button>
+      </li>
+      <li>
+        <button class="pop-item" data-action="sobre">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/>
+          </svg>
+          Sobre o painel
+        </button>
+      </li>
+    </ul>
+  </div>
 
   <!-- PAINEL DE CONFIGURAÇÕES -->
   <div class="settings-overlay" id="settingsOverlay" aria-hidden="true"></div>

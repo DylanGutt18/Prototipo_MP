@@ -1,6 +1,5 @@
 /* ==========================================================================
    prototipo.js — menu · count-up · gráficos · relógio
-   Gráficos usam viewBox fixo; CSS escala. Sem ResizeObserver.
    ========================================================================== */
 (() => {
   'use strict';
@@ -92,24 +91,25 @@
     const host = $('#chart');
     if (!host) return { render() {} };
 
-    const VW = 720, VH = 280;
     const receita = [18, 22, 20, 28, 32, 30, 36, 42, 40, 48, 45, 52];
     const despesa = [14, 16, 15, 20, 22, 24, 26, 28, 30, 32, 34, 36];
     const labels  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
     const build = () => {
-      const pad = { t: 16, r: 8, b: 28, l: 8 };
-      const iw = VW - pad.l - pad.r;
-      const ih = VH - pad.t - pad.b;
       const max = Math.max(...receita, ...despesa) * 1.12;
-      const stepX = iw / (receita.length - 1);
-      const yFor = v => pad.t + ih - (v / max) * ih;
+      const n   = receita.length;
 
-      const ptsR = receita.map((v, i) => [pad.l + i * stepX, yFor(v)]);
-      const ptsD = despesa.map((v, i) => [pad.l + i * stepX, yFor(v)]);
+      const xAt = i => (i / (n - 1)) * 100;
+      const yAt = v => (1 - v / max) * 100;
+
+      const ptsR = receita.map((v, i) => [xAt(i), yAt(v)]);
+      const ptsD = despesa.map((v, i) => [xAt(i), yAt(v)]);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-inner';
 
       const svg = svgEl('svg', {
-        viewBox: `0 0 ${VW} ${VH}`,
+        viewBox: '0 0 100 100',
         preserveAspectRatio: 'none',
         'aria-hidden': 'true',
       });
@@ -121,24 +121,26 @@
       defs.appendChild(grad);
       svg.appendChild(defs);
 
-      const grid = svgEl('g', { stroke: 'var(--chart-grid)', 'stroke-width': '1' });
+      const grid = svgEl('g', {
+        stroke: 'var(--chart-grid)',
+        'stroke-width': '1',
+        'vector-effect': 'non-scaling-stroke',
+      });
       for (let i = 0; i <= 4; i++) {
-        const y = pad.t + (ih / 4) * i;
-        grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: VW - pad.r, y2: y }));
+        const y = (i / 4) * 100;
+        grid.appendChild(svgEl('line', { x1: '0', y1: y, x2: '100', y2: y }));
       }
       svg.appendChild(grid);
 
-      const areaD = smoothPath(ptsR) +
-        ` L ${ptsR[ptsR.length - 1][0]} ${pad.t + ih}` +
-        ` L ${ptsR[0][0]} ${pad.t + ih} Z`;
+      const areaD = smoothPath(ptsR) + ` L 100 100 L 0 100 Z`;
       const area = svgEl('path', { d: areaD, fill: 'url(#gArea)', opacity: '0' });
       svg.appendChild(area);
       requestAnimationFrame(() => {
-        area.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1) .25s';
+        area.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1) .35s';
         area.style.opacity = '1';
       });
 
-      [['var(--chart-1)', ptsD], ['var(--chart-2)', ptsR]].forEach(([color, pts], idx) => {
+      [['var(--chart-1)', ptsD], ['var(--chart-2)', ptsR]].forEach(([color, pts]) => {
         const line = svgEl('path', {
           d: smoothPath(pts),
           fill: 'none',
@@ -149,41 +151,36 @@
           'vector-effect': 'non-scaling-stroke',
         });
         svg.appendChild(line);
-        requestAnimationFrame(() => {
-          const len = line.getTotalLength();
-          line.style.strokeDasharray = `${len}`;
-          line.style.strokeDashoffset = `${len}`;
-          line.style.transition = `stroke-dashoffset 1.4s cubic-bezier(.16,1,.3,1) ${idx * 0.15}s`;
-          requestAnimationFrame(() => { line.style.strokeDashoffset = '0'; });
-        });
       });
 
+      wrap.appendChild(svg);
+
+      const points = document.createElement('div');
+      points.className = 'chart-points';
       ptsR.forEach((p, i) => {
-        const c = svgEl('circle', {
-          cx: p[0], cy: p[1], r: '0',
-          fill: 'var(--chart-2)',
-          stroke: 'var(--bg-1)',
-          'stroke-width': '2',
-        });
-        svg.appendChild(c);
-        c.style.transition = `r .35s cubic-bezier(.16,1,.3,1) ${0.5 + i * 0.04}s`;
-        requestAnimationFrame(() => c.setAttribute('r', '2.8'));
+        const dot = document.createElement('span');
+        dot.className = 'chart-dot';
+        dot.style.left = p[0] + '%';
+        dot.style.top  = p[1] + '%';
+        dot.style.transitionDelay = (0.6 + i * 0.04) + 's';
+        points.appendChild(dot);
+      });
+      wrap.appendChild(points);
+
+      const labelsEl = document.createElement('div');
+      labelsEl.className = 'chart-labels';
+      labels.forEach(lb => {
+        const s = document.createElement('span');
+        s.textContent = lb;
+        labelsEl.appendChild(s);
+      });
+      wrap.appendChild(labelsEl);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => wrap.classList.add('is-ready'));
       });
 
-      const labelG = svgEl('g', {
-        fill: 'var(--chart-label)',
-        'font-size': '10',
-        'font-family': 'JetBrains Mono, monospace',
-        'text-anchor': 'middle',
-      });
-      labels.forEach((lb, i) => {
-        if (i % 2 !== 0) return;
-        const t = svgEl('text', { x: pad.l + i * stepX, y: VH - 8 });
-        t.textContent = lb;
-        labelG.appendChild(t);
-      });
-      svg.appendChild(labelG);
-      return svg;
+      return wrap;
     };
 
     const render = () => {
@@ -279,7 +276,11 @@
       'aria-hidden': 'true',
     });
 
-    const grid = svgEl('g', { stroke: 'var(--chart-grid)', 'stroke-width': '1' });
+    const grid = svgEl('g', {
+      stroke: 'var(--chart-grid)',
+      'stroke-width': '1',
+      'vector-effect': 'non-scaling-stroke',
+    });
     for (let i = 0; i <= 3; i++) {
       const y = pad.t + (ih / 3) * i;
       grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: VW - pad.r, y2: y }));

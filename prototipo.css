@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TOKENS (tamanhos, curvas, fontes — não mudam por tema)
+   TOKENS
    ========================================================================== */
 :root {
   --rail-w: 56px;
@@ -63,6 +63,9 @@ a { color: inherit; text-decoration: none; }
   justify-content: space-between;
   padding: 14px 0 18px;
   z-index: 1002;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .rail-avatar {
@@ -75,6 +78,7 @@ a { color: inherit; text-decoration: none; }
   place-items: center;
   color: var(--fg-2);
   transition: all .2s var(--ease);
+  flex-shrink: 0;
 }
 .rail-avatar:hover {
   color: var(--fg);
@@ -82,7 +86,12 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12);
 }
 
-.rail-bottom { display: flex; flex-direction: column; gap: 6px; }
+.rail-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
 
 .rail-btn {
   width: 34px;
@@ -105,11 +114,54 @@ a { color: inherit; text-decoration: none; }
   width: var(--menu-w);
   background: var(--bg-1);
   border-right: 1px solid var(--line);
-  padding: 14px 12px;
+  padding: 14px 12px 32px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   z-index: 1001;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+  box-sizing: border-box;
+  height: 100vh;
+  min-height: 0;
+}
+.menu::-webkit-scrollbar { width: 6px; }
+.menu::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 3px;
+}
+
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: var(--r-sm);
+  color: var(--fg-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  transition: color .18s var(--ease), background .18s var(--ease);
+  flex-shrink: 0;
+  min-height: 40px;
+  height: auto;
+  overflow: visible;
+}
+
+.menu-item span {
+  display: inline-block;
+  line-height: 1.35;
+  overflow: visible;
+  white-space: nowrap;
+}
+.menu::-webkit-scrollbar { width: 6px; }
+.menu::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 3px;
 }
 
 .brand {
@@ -119,6 +171,7 @@ a { color: inherit; text-decoration: none; }
   padding: 8px 8px 18px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 .brand-mark {
   width: 20px;
@@ -130,18 +183,7 @@ a { color: inherit; text-decoration: none; }
 }
 .brand-name { font-weight: 600; letter-spacing: -.01em; font-size: 14px; }
 
-.menu-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: var(--r-sm);
-  color: var(--fg-2);
-  font-size: 13.5px;
-  font-weight: 500;
-  transition: color .18s var(--ease), background .18s var(--ease);
-}
+
 .menu-item svg { flex-shrink: 0; opacity: .8; }
 
 .menu-item::before {
@@ -329,7 +371,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ==========================================================================
-   CARDS (receita · despesa)
+   CARDS
    ========================================================================== */
 .metrics {
   display: grid;
@@ -445,11 +487,73 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 0 0 3px rgba(255, 255, 255, .03);
 }
 
-.chart { width: 100%; height: 300px; position: relative; }
-.chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* ==========================================================================
+   GRÁFICO
+   ========================================================================== */
+.chart {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.chart-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 16px 8px 28px;
+}
+
+.chart-inner > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.4s cubic-bezier(.16, 1, .3, 1);
+}
+.chart-inner.is-ready > svg {
+  clip-path: inset(0 0 0 0);
+}
+
+.chart-points {
+  position: absolute;
+  inset: 16px 8px 28px;
+  pointer-events: none;
+}
+
+.chart-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--chart-2);
+  box-shadow: 0 0 0 2px var(--bg-1);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity .3s ease, transform .35s cubic-bezier(.16, 1, .3, 1);
+}
+.chart-inner.is-ready .chart-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.chart-labels {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--chart-label);
+}
 
 /* ==========================================================================
-   ANÁLISES (donuts + barras)
+   ANÁLISES
    ========================================================================== */
 .analytics {
   display: grid;
@@ -489,6 +593,7 @@ a { color: inherit; text-decoration: none; }
 
 .bar-host { width: 100%; height: 170px; }
 .bar-host svg { display: block; width: 100%; height: 100%; }
+
 /* ==========================================================================
    OVERLAY · NAV INFERIOR · ANIMAÇÕES
    ========================================================================== */
@@ -515,12 +620,14 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
 /* ==========================================================================
    RESPONSIVO
    ========================================================================== */
-
-
 @media (max-width: 1024px) {
   :root { --menu-w: 190px; }
   .content { padding-left: 22px; padding-right: 22px; }
   .search { width: min(360px, 100%); }
+}
+
+@media (max-width: 900px) {
+  .tools-right { display: none; }
 }
 
 @media (max-width: 768px) {
@@ -545,7 +652,6 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
     gap: 8px;
   }
   .menu-btn { display: inline-flex; }
-  .tools-right { display: none; }
 
   .content {
     margin-left: 0;
@@ -600,9 +706,6 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   .card-value .num { font-size: 20px; }
   .bottom-nav a { font-size: 9.5px; }
 }
-@media (max-width: 900px) {
-  .tools-right { display: none; }
-}
 
 /* ==========================================================================
    ACESSIBILIDADE · PREFERÊNCIAS
@@ -628,3 +731,5 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   transition: filter .25s var(--ease);
 }
 [data-hide-values="true"] .card-value:hover .num { filter: none; }
+.rail  { z-index: 1010; }
+.menu  { z-index: 1011; }

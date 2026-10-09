@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · gráficos · período · popovers · toast
+   prototipo.js — menu · gráficos · período · popovers · toast · busca
    ========================================================================== */
 (() => {
   'use strict';
@@ -14,7 +14,32 @@
     return el;
   };
 
-  /* ===== DATASETS POR PERÍODO ===== */
+  /* ===== MOEDA ===== */
+  const CURRENCY_LOCALE = { BRL: 'pt-BR', USD: 'en-US', EUR: 'de-DE' };
+
+  function formatMoney(value, opts = {}) {
+    const s = window.Settings?.get?.() || {};
+    const currency = opts.currency || s.currency || 'BRL';
+    const decimals = opts.decimals ?? s.decimals ?? 0;
+    const compact = opts.compact ?? true;
+
+    const options = {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimals,
+    };
+    if (compact) {
+      options.notation = 'compact';
+      options.compactDisplay = 'short';
+    }
+    return new Intl.NumberFormat(
+      CURRENCY_LOCALE[currency] || 'pt-BR',
+      options
+    ).format(value);
+  }
+
+  /* ===== DATASETS ===== */
   const DATASETS = {
     '30d': {
       labels: Array.from({ length: 30 }, (_, i) => String(i + 1)),
@@ -33,20 +58,17 @@
         { label: 'Novos',      value: 42, color: '--chart-1' },
       ],
       barras: [
-        { label: 'Seg', value: 4.5 },
-        { label: 'Ter', value: 5.2 },
-        { label: 'Qua', value: 4.8 },
-        { label: 'Qui', value: 5.5 },
-        { label: 'Sex', value: 6.2 },
-        { label: 'Sáb', value: 3.8 },
+        { label: 'Seg', value: 4.5 },{ label: 'Ter', value: 5.2 },
+        { label: 'Qua', value: 4.8 },{ label: 'Qui', value: 5.5 },
+        { label: 'Sex', value: 6.2 },{ label: 'Sáb', value: 3.8 },
         { label: 'Dom', value: 2.1 },
       ],
       topProdutos: [
-        { label: 'Notebook Pro 15', value: 12, display: 'R$ 12k' },
-        { label: 'Monitor 27"',     value: 9,  display: 'R$ 9k'  },
-        { label: 'Teclado Mec.',    value: 7,  display: 'R$ 7k'  },
-        { label: 'Headset BT',      value: 5,  display: 'R$ 5k'  },
-        { label: 'Mouse Ergo',      value: 3,  display: 'R$ 3k'  },
+        { label: 'Notebook Pro 15', value: 12000 },
+        { label: 'Monitor 27"',     value: 9000 },
+        { label: 'Teclado Mec.',    value: 7000 },
+        { label: 'Headset BT',      value: 5000 },
+        { label: 'Mouse Ergo',      value: 3000 },
       ],
     },
     '90d': {
@@ -66,25 +88,19 @@
         { label: 'Novos',      value: 39, color: '--chart-1' },
       ],
       barras: [
-        { label: 'Out', value: 24 },
-        { label: 'Nov', value: 28 },
-        { label: 'Dez', value: 31 },
-        { label: 'Jan', value: 26 },
-        { label: 'Fev', value: 30 },
-        { label: 'Mar', value: 34 },
-        { label: 'Abr', value: 29 },
-        { label: 'Mai', value: 33 },
-        { label: 'Jun', value: 36 },
-        { label: 'Jul', value: 31 },
-        { label: 'Ago', value: 38 },
-        { label: 'Set', value: 41 },
+        { label: 'Out', value: 24 },{ label: 'Nov', value: 28 },
+        { label: 'Dez', value: 31 },{ label: 'Jan', value: 26 },
+        { label: 'Fev', value: 30 },{ label: 'Mar', value: 34 },
+        { label: 'Abr', value: 29 },{ label: 'Mai', value: 33 },
+        { label: 'Jun', value: 36 },{ label: 'Jul', value: 31 },
+        { label: 'Ago', value: 38 },{ label: 'Set', value: 41 },
       ],
       topProdutos: [
-        { label: 'Notebook Pro 15', value: 34, display: 'R$ 34k' },
-        { label: 'Monitor 27"',     value: 27, display: 'R$ 27k' },
-        { label: 'Teclado Mec.',    value: 21, display: 'R$ 21k' },
-        { label: 'Headset BT',      value: 15, display: 'R$ 15k' },
-        { label: 'Mouse Ergo',      value: 10, display: 'R$ 10k' },
+        { label: 'Notebook Pro 15', value: 34000 },
+        { label: 'Monitor 27"',     value: 27000 },
+        { label: 'Teclado Mec.',    value: 21000 },
+        { label: 'Headset BT',      value: 15000 },
+        { label: 'Mouse Ergo',      value: 10000 },
       ],
     },
     '1a': {
@@ -110,16 +126,15 @@
         { label: 'Q4', value: 137 },
       ],
       topProdutos: [
-        { label: 'Notebook Pro 15', value: 128, display: 'R$ 128k' },
-        { label: 'Monitor 27"',     value: 96,  display: 'R$ 96k'  },
-        { label: 'Teclado Mec.',    value: 78,  display: 'R$ 78k'  },
-        { label: 'Headset BT',      value: 54,  display: 'R$ 54k'  },
-        { label: 'Mouse Ergo',      value: 34,  display: 'R$ 34k'  },
+        { label: 'Notebook Pro 15', value: 128000 },
+        { label: 'Monitor 27"',     value: 96000 },
+        { label: 'Teclado Mec.',    value: 78000 },
+        { label: 'Headset BT',      value: 54000 },
+        { label: 'Mouse Ergo',      value: 34000 },
       ],
     },
   };
 
-  /* Estoque é um snapshot — não muda com o período */
   const ESTOQUE = [
     { label: 'Notebook Pro 15', value: 3,  max: 40 },
     { label: 'Headset BT',      value: 5,  max: 35 },
@@ -229,7 +244,7 @@
     sobre:   'Painel v1.0 · build 2026.10',
   };
 
-  document.querySelectorAll('.pop-item[data-action]').forEach(item => {
+  $$('.pop-item[data-action]').forEach(item => {
     item.addEventListener('click', e => {
       e.stopPropagation();
       mostrarToast(ACOES_AJUDA[item.dataset.action] || `Ação: ${item.dataset.action}`);
@@ -237,11 +252,9 @@
     });
   });
 
-  /* ===== COUNT-UP ===== */
+  /* ===== ANIMAÇÃO DE NÚMEROS ===== */
   function animateNumber(el, to, { duration = 700, decimals = 0 } = {}) {
-    const from = parseFloat(
-      String(el.textContent).replace(/\./g, '').replace(',', '.')
-    ) || 0;
+    const from = parseFloat(el.dataset.current || 0);
     const start = performance.now();
     const ease = t => 1 - Math.pow(1 - t, 3);
     const frame = (now) => {
@@ -251,20 +264,29 @@
         ? v.toFixed(decimals).replace('.', ',')
         : Math.round(v).toString();
       if (t < 1) requestAnimationFrame(frame);
+      else {
+        el.textContent = decimals ? to.toFixed(decimals).replace('.', ',') : Math.round(to).toString();
+        el.dataset.current = to;
+      }
     };
     requestAnimationFrame(frame);
   }
 
-  function runCounters(root = document) {
-    $$('[data-count]', root).forEach(el => {
-      const to = parseFloat(el.dataset.count);
-      if (Number.isNaN(to)) return;
-      el.textContent = '0';
-      animateNumber(el, to, {
-        duration: 1000 + Math.random() * 250,
-        decimals: el.dataset.decimals ? +el.dataset.decimals : 0,
-      });
-    });
+  function animateMoney(el, to, duration = 700) {
+    const from = parseFloat(el.dataset.current || 0);
+    const start = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const frame = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const v = from + (to - from) * ease(t);
+      el.textContent = formatMoney(v);
+      if (t < 1) requestAnimationFrame(frame);
+      else {
+        el.textContent = formatMoney(to);
+        el.dataset.current = to;
+      }
+    };
+    requestAnimationFrame(frame);
   }
 
   /* ===== CURVA SUAVE ===== */
@@ -287,6 +309,8 @@
   const Chart = (() => {
     const host = $('#chart');
     if (!host) return { render() {} };
+
+    let chartData = null;
 
     const build = (data) => {
       const { receita, despesa, labels } = data;
@@ -328,9 +352,7 @@
 
       const areaD = smoothPath(ptsR) + ` L 100 100 L 0 100 Z`;
       const area = svgEl('path', {
-        d: areaD,
-        fill: 'url(#gArea)',
-        opacity: '0',
+        d: areaD, fill: 'url(#gArea)', opacity: '0',
         class: 'serie serie--receita' + (visivel.receita ? '' : ' is-hidden'),
       });
       svg.appendChild(area);
@@ -339,12 +361,10 @@
         area.style.opacity = '1';
       });
 
-      const series = [
+      [
         { key: 'despesa', color: 'var(--chart-1)', pts: ptsD },
         { key: 'receita', color: 'var(--chart-2)', pts: ptsR },
-      ];
-
-      series.forEach(({ key, color, pts }) => {
+      ].forEach(({ key, color, pts }) => {
         const line = svgEl('path', {
           d: smoothPath(pts),
           fill: 'none',
@@ -374,11 +394,9 @@
 
       const labelsEl = document.createElement('div');
       labelsEl.className = 'chart-labels';
-
       const mostrarTodas = labels.length <= 12;
       const step = mostrarTodas ? 1 : Math.ceil(labels.length / 6);
       const ultimo = labels.length - 1;
-
       labels.forEach((lb, i) => {
         if (!mostrarTodas && i % step !== 0 && i !== ultimo) return;
         const s = document.createElement('span');
@@ -387,6 +405,67 @@
         labelsEl.appendChild(s);
       });
       wrap.appendChild(labelsEl);
+
+      // hover / tooltip
+      const hoverLayer = document.createElement('div');
+      hoverLayer.className = 'chart-hover';
+      const cursor = document.createElement('div');
+      cursor.className = 'chart-cursor';
+      hoverLayer.appendChild(cursor);
+      wrap.appendChild(hoverLayer);
+
+      const tooltip = document.createElement('div');
+      tooltip.className = 'chart-tooltip';
+      wrap.appendChild(tooltip);
+
+      chartData = { ptsR, ptsD, labels, n, receita, despesa };
+
+      hoverLayer.addEventListener('mousemove', e => {
+        if (!chartData) return;
+        const rect = wrap.getBoundingClientRect();
+        const padL = 8, padR = 8, padT = 16, padB = 28;
+        const innerW = rect.width - padL - padR;
+        const x = e.clientX - rect.left - padL;
+        const ratio = Math.max(0, Math.min(1, x / innerW));
+        const idx = Math.round(ratio * (chartData.n - 1));
+
+        const pR = chartData.ptsR[idx];
+        const pD = chartData.ptsD[idx];
+
+        cursor.style.left = pR[0] + '%';
+
+        const label = chartData.labels[idx];
+        const labelPrefix = periodoAtual === '1a' ? 'Mês'
+                          : periodoAtual === '90d' ? 'Semana' : 'Dia';
+
+        tooltip.innerHTML = `
+          <div class="tt-label">${labelPrefix} ${label}</div>
+          <div class="tt-row">
+            <span><i class="tt-dot" style="background:var(--chart-2)"></i>Receita</span>
+            <span class="tt-val">${formatMoney(chartData.receita[idx] * 1000)}</span>
+          </div>
+          <div class="tt-row">
+            <span><i class="tt-dot" style="background:var(--chart-1)"></i>Despesa</span>
+            <span class="tt-val">${formatMoney(chartData.despesa[idx] * 1000)}</span>
+          </div>
+        `;
+
+        // posiciona acima do ponto mais alto
+        const topY = Math.min(pR[1], pD[1]);
+        const padTopPercent = (padT / rect.height) * 100;
+        const plotHeightPercent = 100 - padTopPercent - (padB / rect.height) * 100;
+        const topPos = padTopPercent + (topY / 100) * plotHeightPercent;
+
+        tooltip.style.left = pR[0] + '%';
+        tooltip.style.top  = topPos + '%';
+        tooltip.classList.add('is-visible');
+        hoverLayer.classList.add('is-active');
+      });
+
+      hoverLayer.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('is-visible');
+        hoverLayer.classList.remove('is-active');
+      });
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => wrap.classList.add('is-ready'));
@@ -404,7 +483,7 @@
     return { render };
   })();
 
-  /* ===== TOGGLE DE SÉRIES (legendas) ===== */
+  /* ===== TOGGLE DE SÉRIES ===== */
   $$('.legend [data-serie]').forEach(el => {
     el.addEventListener('click', () => {
       const key = el.dataset.serie;
@@ -417,14 +496,12 @@
     });
   });
 
-  /* ===== ATUALIZA CARDS ===== */
+  /* ===== BADGE ===== */
   function atualizarBadge(badgeEl, variacao, invertido) {
     const subiu = variacao > 0;
     const bom = invertido ? !subiu : subiu;
-
     badgeEl.classList.remove('pos', 'neg');
     badgeEl.classList.add(bom ? 'pos' : 'neg');
-
     badgeEl.querySelector('.badge-icon path').setAttribute(
       'd',
       subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'
@@ -437,21 +514,21 @@
     const d = DATASETS[periodo];
     if (!d) return;
 
-    const receitaTotal = d.receita.reduce((s, v) => s + v, 0);
-    const despesaTotal = d.despesa.reduce((s, v) => s + v, 0);
+    const receitaTotal = d.receita.reduce((s, v) => s + v, 0) * 1000;
+    const despesaTotal = d.despesa.reduce((s, v) => s + v, 0) * 1000;
 
-    const rEl = $('.metrics .card:nth-child(1) .num');
-    const dEl = $('.metrics .card:nth-child(2) .num');
-    const rBadge = $('.metrics .card:nth-child(1) .card-badge');
-    const dBadge = $('.metrics .card:nth-child(2) .card-badge');
+    const rEl = $('#cardReceita .num');
+    const dEl = $('#cardDespesa .num');
+    const rBadge = $('#cardReceita .card-badge');
+    const dBadge = $('#cardDespesa .card-badge');
 
-    if (rEl) animateNumber(rEl, Math.round(receitaTotal), { duration: 700 });
-    if (dEl) animateNumber(dEl, Math.round(despesaTotal), { duration: 700 });
+    if (rEl) animateMoney(rEl, receitaTotal);
+    if (dEl) animateMoney(dEl, despesaTotal);
     if (rBadge) atualizarBadge(rBadge, d.variacaoReceita, false);
     if (dBadge) atualizarBadge(dBadge, d.variacaoDespesa, true);
   }
 
-  /* ===== DONUT ===== */
+  /* ===== DONUT INTERATIVO ===== */
   const Donut = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
@@ -473,28 +550,75 @@
     }));
 
     let acc = 0;
+    const slices = [];
     data.forEach(d => {
       const len = (d.value / total) * circ;
-      svg.appendChild(svgEl('circle', {
+      const slice = svgEl('circle', {
         cx, cy, r, fill: 'none',
         stroke: `var(${d.color})`,
         'stroke-width': stroke,
         'stroke-dasharray': `${len} ${circ - len}`,
         'stroke-dashoffset': -acc,
         transform: `rotate(-90 ${cx} ${cy})`,
-      }));
+        class: 'donut-slice',
+      });
+      slice.dataset.label = d.label;
+      slice.dataset.value = d.value;
+      slice.dataset.pct = Math.round((d.value / total) * 100);
+      svg.appendChild(slice);
+      slices.push(slice);
       acc += len;
     });
+
+    // texto central — 2 linhas (label em cima, valor embaixo)
+    const labelEl = svgEl('text', {
+      x: cx, y: cy - 2,
+      class: 'donut-center-label',
+    });
+    labelEl.textContent = 'Total';
+    svg.appendChild(labelEl);
+
+    const valueEl = svgEl('text', {
+      x: cx, y: cy + 16,
+      class: 'donut-center-value',
+    });
+    valueEl.textContent = total;
+    svg.appendChild(valueEl);
 
     host.innerHTML = '';
     host.appendChild(svg);
 
+    // interações
+    slices.forEach(slice => {
+      slice.addEventListener('mouseenter', () => {
+        slice.setAttribute('stroke-width', String(stroke + 4));
+        labelEl.textContent = slice.dataset.label;
+        valueEl.textContent = slice.dataset.pct + '%';
+      });
+      slice.addEventListener('mouseleave', () => {
+        slice.setAttribute('stroke-width', String(stroke));
+        labelEl.textContent = 'Total';
+        valueEl.textContent = total;
+      });
+    });
+
+    // legenda interativa
     const legend = document.createElement('div');
     legend.className = 'donut-legend';
-    data.forEach(d => {
+    data.forEach((d, i) => {
       const pct = Math.round((d.value / total) * 100);
       const item = document.createElement('span');
       item.innerHTML = `<i style="background:var(${d.color})"></i>${d.label}<b>${pct}%</b>`;
+      item.addEventListener('mouseenter', () => {
+        slices[i].setAttribute('stroke-width', String(stroke + 4));
+        labelEl.textContent = d.label;
+        valueEl.textContent = pct + '%';
+      });
+      item.addEventListener('mouseleave', () => {
+        slices[i].setAttribute('stroke-width', String(stroke));
+        labelEl.textContent = 'Total';
+        valueEl.textContent = total;
+      });
       legend.appendChild(item);
     });
     host.appendChild(legend);
@@ -506,7 +630,7 @@
     });
   };
 
-  /* ===== BARRAS VERTICAIS ===== */
+  /* ===== BARRAS ===== */
   const Bars = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
@@ -526,8 +650,7 @@
     });
 
     const grid = svgEl('g', {
-      stroke: 'var(--chart-grid)',
-      'stroke-width': '1',
+      stroke: 'var(--chart-grid)', 'stroke-width': '1',
       'vector-effect': 'non-scaling-stroke',
     });
     for (let i = 0; i <= 3; i++) {
@@ -579,17 +702,15 @@
     host.appendChild(svg);
   };
 
-  /* ===== BARRAS HORIZONTAIS (estoque) ===== */
+  /* ===== ESTOQUE ===== */
   const StockList = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
-
     host.innerHTML = '';
     data.forEach(d => {
       const pct = Math.min(100, (d.value / d.max) * 100);
       const critico = pct < 20;
       const baixo = pct >= 20 && pct < 35;
-
       const row = document.createElement('div');
       row.className = 'hbar' + (critico ? ' is-critical' : baixo ? ' is-low' : '');
       row.innerHTML = `
@@ -602,7 +723,6 @@
         </div>
       `;
       host.appendChild(row);
-
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           row.querySelector('.hbar-fill').style.width = pct + '%';
@@ -615,9 +735,7 @@
   const TopList = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
-
     const max = Math.max(...data.map(d => d.value));
-
     host.innerHTML = '';
     data.forEach((d, i) => {
       const pct = (d.value / max) * 100;
@@ -629,10 +747,9 @@
           <span class="top-name">${d.label}</span>
           <div class="top-bar"><div class="top-bar-fill" style="width:0%"></div></div>
         </div>
-        <span class="top-value">${d.display || d.value}</span>
+        <span class="top-value">${formatMoney(d.value)}</span>
       `;
       host.appendChild(item);
-
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           item.querySelector('.top-bar-fill').style.width = pct + '%';
@@ -643,12 +760,12 @@
 
   /* ===== RENDER GERAL ===== */
   function renderAll(periodo) {
-    periodoAtual = periodo;
-    const d = DATASETS[periodo];
+    periodoAtual = periodo || periodoAtual;
+    const d = DATASETS[periodoAtual];
     if (!d) return;
 
     Chart.render();
-    atualizarCards(periodo);
+    atualizarCards(periodoAtual);
     Donut('donutCategorias', d.categorias);
     Donut('donutOrigem', d.origem);
     Bars('barPeriodo', d.barras);
@@ -657,12 +774,170 @@
   }
 
   /* ===== CHIPS DE PERÍODO ===== */
+  function setPeriodo(p) {
+    if (!DATASETS[p]) return;
+    periodoAtual = p;
+    $$('.range-picker .chip').forEach(c =>
+      c.classList.toggle('active', c.dataset.period === p)
+    );
+    renderAll(p);
+  }
+
   $$('.range-picker .chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      $$('.range-picker .chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      renderAll(chip.dataset.period || '1a');
+    chip.addEventListener('click', () => setPeriodo(chip.dataset.period));
+  });
+
+  /* ===== MODO APRESENTAÇÃO ===== */
+  function setPresentation(on) {
+    document.body.classList.toggle('presentation-mode', on);
+    const exit = $('#presentationExit');
+    if (exit) exit.hidden = !on;
+    if (on) {
+      // fecha painel de configs se estiver aberto
+      window.Settings?.close?.();
+    }
+  }
+
+  $('#presentationExit')?.addEventListener('click', () => {
+    setPresentation(false);
+    window.Settings?.set?.('presentation', false);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.body.classList.contains('presentation-mode')) {
+      setPresentation(false);
+      window.Settings?.set?.('presentation', false);
+    }
+  });
+
+  /* ===== BUSCA ===== */
+  const SEARCH_TARGETS = [
+    { id: 'contentHeader',   label: 'Visão Geral',            keywords: ['visão', 'geral', 'resumo', 'home'] },
+    { id: 'cardReceita',     label: 'Receita do período',     keywords: ['receita', 'entrada', 'ganho'] },
+    { id: 'cardDespesa',     label: 'Despesa do período',     keywords: ['despesa', 'gasto', 'saída'] },
+    { id: 'panelGrafico',    label: 'Receita × Despesa',      keywords: ['gráfico', 'comparativo', 'linha'] },
+    { id: 'panelCategorias', label: 'Gastos por categoria',   keywords: ['categoria', 'gastos', 'marketing', 'salários', 'operacional', 'infraestrutura'] },
+    { id: 'panelOrigem',     label: 'Origem da receita',      keywords: ['origem', 'recorrente', 'novos'] },
+    { id: 'panelBarras',     label: 'Receita no período',     keywords: ['barras', 'receita'] },
+    { id: 'panelEstoque',    label: 'Estoque crítico',        keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
+    { id: 'panelTop',        label: 'Top produtos',           keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
+    // produtos individuais
+    ...['Notebook Pro 15', 'Monitor 27"', 'Teclado Mec.', 'Headset BT', 'Mouse Ergo'].map(name => ({
+      id: 'panelTop',
+      label: name,
+      keywords: [name.toLowerCase()],
+      child: name,
+    })),
+  ];
+
+  const searchInput = $('#searchInput');
+  const searchResults = $('#searchResults');
+  let activeResultIdx = -1;
+
+  function normalizar(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function buscar(termo) {
+    const q = normalizar(termo.trim());
+    if (!q) return [];
+    return SEARCH_TARGETS.filter(t => {
+      const alvo = normalizar(t.label);
+      const keys = t.keywords.map(normalizar).join(' ');
+      return alvo.includes(q) || keys.includes(q);
+    }).slice(0, 8);
+  }
+
+  function mostrarResultados(lista) {
+    searchResults.innerHTML = '';
+    activeResultIdx = -1;
+
+    if (!lista.length) {
+      searchResults.innerHTML = '<div class="search-empty">Nada encontrado</div>';
+      searchResults.classList.add('is-open');
+      return;
+    }
+
+    lista.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'search-result';
+      btn.dataset.targetId = t.id;
+      btn.dataset.child = t.child || '';
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/>
+        </svg>
+        <span>${t.label}</span>
+      `;
+      btn.addEventListener('click', () => irPara(t));
+      searchResults.appendChild(btn);
     });
+    searchResults.classList.add('is-open');
+  }
+
+  function fecharResultados() {
+    searchResults.classList.remove('is-open');
+    activeResultIdx = -1;
+  }
+
+  function irPara(t) {
+    const target = document.getElementById(t.id);
+    if (!target) return;
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    setTimeout(() => {
+      target.classList.remove('is-highlighted');
+      void target.offsetWidth;
+      target.classList.add('is-highlighted');
+      setTimeout(() => target.classList.remove('is-highlighted'), 2100);
+    }, 420);
+
+    fecharResultados();
+    searchInput.value = '';
+    searchInput.blur();
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const lista = buscar(searchInput.value);
+      if (!searchInput.value.trim()) return fecharResultados();
+      mostrarResultados(lista);
+    });
+
+    searchInput.addEventListener('keydown', e => {
+      const items = $$('.search-result');
+      if (!items.length) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeResultIdx = (activeResultIdx + 1) % items.length;
+        items.forEach((it, i) => it.classList.toggle('is-active', i === activeResultIdx));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeResultIdx = (activeResultIdx - 1 + items.length) % items.length;
+        items.forEach((it, i) => it.classList.toggle('is-active', i === activeResultIdx));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const idx = activeResultIdx >= 0 ? activeResultIdx : 0;
+        items[idx]?.click();
+      } else if (e.key === 'Escape') {
+        fecharResultados();
+        searchInput.blur();
+      }
+    });
+
+    searchInput.addEventListener('focus', () => {
+      if (searchInput.value.trim()) {
+        mostrarResultados(buscar(searchInput.value));
+      }
+    });
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search')) fecharResultados();
   });
 
   /* ===== RELÓGIO ===== */
@@ -678,10 +953,19 @@
     setInterval(tick, 30_000);
   };
 
+  /* ===== REAGE A MUDANÇAS DE PREFERÊNCIAS ===== */
+  document.addEventListener('settings:change', () => {
+    // re-renderiza com novo formato de moeda / casas decimais
+    renderAll(periodoAtual);
+    setPresentation(window.Settings?.get?.('presentation'));
+  });
+
   /* ===== BOOT ===== */
   const boot = () => {
     startClock();
-    renderAll('1a');
+    const defaultPeriod = window.Settings?.get?.('defaultPeriod') || '1a';
+    setPeriodo(defaultPeriod);
+    setPresentation(window.Settings?.get?.('presentation'));
   };
 
   if (document.readyState === 'loading') {
@@ -690,5 +974,11 @@
     boot();
   }
 
-  window.Dash = { renderAll, animateNumber, runCounters };
+  window.Dash = {
+    renderAll,
+    setPeriodo,
+    animateNumber,
+    formatMoney,
+    setPresentation,
+  };
 })();

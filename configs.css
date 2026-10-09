@@ -1,11 +1,11 @@
-/* =========================================================
+/* ==========================================================================
    PAINEL DE CONFIGURAÇÕES
-   ========================================================= */
+   ========================================================================== */
 
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, .5);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   opacity: 0;
@@ -30,11 +30,10 @@ body.settings-open .settings-overlay {
   transform: translateX(100%);
   transition: transform .38s var(--ease-out);
   z-index: 1200;
-  box-shadow: -30px 0 60px -30px rgba(0,0,0,.5);
+  box-shadow: -30px 0 60px -30px rgba(0, 0, 0, .5);
 }
 .settings.is-open { transform: none; }
 
-/* ---------- header ---------- */
 .settings-head {
   display: flex;
   align-items: flex-start;
@@ -65,13 +64,12 @@ body.settings-open .settings-overlay {
 }
 .settings-close:hover {
   color: var(--fg);
-  background: rgba(255,255,255,.05);
+  background: rgba(255, 255, 255, .05);
 }
 [data-theme="claro"] .settings-close:hover {
-  background: rgba(0,0,0,.05);
+  background: rgba(0, 0, 0, .05);
 }
 
-/* ---------- corpo rolável ---------- */
 .settings-body {
   flex: 1;
   overflow-y: auto;
@@ -86,7 +84,6 @@ body.settings-open .settings-overlay {
   border-radius: 3px;
 }
 
-/* ---------- seções ---------- */
 .settings-section {
   padding: 20px 0;
   border-bottom: 1px solid var(--line);
@@ -113,7 +110,7 @@ body.settings-open .settings-overlay {
   color: var(--fg-3);
 }
 
-/* ---------- grade de temas ---------- */
+/* ---------- temas ---------- */
 .theme-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -172,9 +169,6 @@ body.settings-open .settings-overlay {
   transform: scale(1);
 }
 
-/* ---------- preview em miniatura ----------
-   Usa data-theme no próprio elemento → os tokens
-   do tema se aplicam apenas dentro dele. */
 .theme-preview {
   display: flex;
   height: 62px;
@@ -217,10 +211,7 @@ body.settings-open .settings-overlay {
   gap: 4px;
   min-width: 0;
 }
-.tp-cards {
-  display: flex;
-  gap: 4px;
-}
+.tp-cards { display: flex; gap: 4px; }
 .tp-card {
   flex: 1;
   height: 12px;
@@ -252,10 +243,10 @@ body.settings-open .settings-overlay {
 }
 .tp-chart svg { display: block; width: 100%; height: 100%; }
 
-/* ---------- segmented (densidade) ---------- */
+/* ---------- segmented (moeda, decimais, período) ---------- */
 .segmented {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--line);
@@ -263,24 +254,25 @@ body.settings-open .settings-overlay {
   background: var(--bg-2);
 }
 .segmented button {
-  padding: 7px 4px;
+  padding: 8px 4px;
   font-size: 12px;
   color: var(--fg-3);
   border-radius: 5px;
   transition: color .18s var(--ease), background .18s var(--ease);
+  white-space: nowrap;
 }
 .segmented button:hover { color: var(--fg-2); }
 .segmented button[aria-checked="true"] {
   color: var(--fg);
   background: var(--bg-1);
-  box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .2);
 }
 [data-theme="claro"] .segmented button[aria-checked="true"] {
   background: var(--bg-3);
   box-shadow: none;
 }
 
-/* ---------- lista de preferências ---------- */
+/* ---------- preferências ---------- */
 .pref-list {
   list-style: none;
   display: flex;
@@ -356,7 +348,35 @@ body.settings-open .settings-overlay {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-.switch input:disabled + .switch-track { opacity: .5; cursor: not-allowed; }
+
+/* ---------- botão cheio (modo apresentação) ---------- */
+.btn-primary {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .2s var(--ease);
+  box-shadow: 0 8px 20px -10px rgba(var(--accent-rgb), .8);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px -10px rgba(var(--accent-rgb), .9);
+}
+.btn-primary svg { flex-shrink: 0; }
+
+.section-help {
+  font-size: 11.5px;
+  color: var(--fg-3);
+  margin-top: 8px;
+  line-height: 1.5;
+}
 
 /* ---------- footer ---------- */
 .settings-footer { padding-top: 8px; }
@@ -379,46 +399,14 @@ body.settings-open .settings-overlay {
   background: var(--bg-2);
 }
 
-/* =========================================================
-   ESTADO GLOBAL — afetado pelas preferências
-   ========================================================= */
-
-/* densidade */
-[data-density="compact"] {
-  --density-pad: 12px;
-  --density-gap: 10px;
-}
-[data-density="normal"] {
-  --density-pad: 18px;
-  --density-gap: 16px;
-}
-[data-density="comfort"] {
-  --density-pad: 22px;
-  --density-gap: 20px;
-}
-[data-density] .card { padding: var(--density-pad); }
-[data-density] .metrics { gap: var(--density-gap); }
-
-/* reduzir animações (mesmo efeito de prefers-reduced-motion) */
-[data-reduce-motion="true"] *,
-[data-reduce-motion="true"] *::before,
-[data-reduce-motion="true"] *::after {
-  animation-duration: .001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: .001ms !important;
-  scroll-behavior: auto !important;
-}
-
-/* ocultar valores sensíveis */
+/* ---------- estado global ---------- */
 [data-hide-values="true"] .card-value .num {
   filter: blur(8px);
   transition: filter .25s var(--ease);
 }
 [data-hide-values="true"] .card-value:hover .num { filter: none; }
 
-/* =========================================================
-   RESPONSIVO
-   ========================================================= */
+/* ---------- responsivo ---------- */
 @media (max-width: 480px) {
   .settings { width: 100vw; border-left: 0; }
   .settings-head { padding: 18px 18px 16px; }

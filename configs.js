@@ -1,6 +1,6 @@
-/* =========================================================
-   Configurações — persistência + painel
-   ========================================================= */
+/* ==========================================================================
+   configs.js — persistência + painel de configurações
+   ========================================================================== */
 (() => {
   'use strict';
 
@@ -10,12 +10,11 @@
 
   const DEFAULTS = {
     theme: 'violeta',
-    density: 'normal',
-    'reduce-motion': false,
-    'compact-numbers': false,
+    currency: 'BRL',
+    decimals: 0,
+    defaultPeriod: '1a',
+    presentation: false,
     'hide-values': false,
-    'notify-stock': true,
-    'notify-daily': false,
   };
 
   let state = load();
@@ -30,22 +29,13 @@
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
   }
 
-  /* ---------------------------------------------------------
-     APLICAÇÃO
-     --------------------------------------------------------- */
+  /* ===== APLICAÇÃO ===== */
   function apply() {
     const html = document.documentElement;
-    html.dataset.theme        = state.theme;
-    html.dataset.density      = state.density;
-    html.dataset.reduceMotion = String(state['reduce-motion']);
-    html.dataset.hideValues   = String(state['hide-values']);
-
-    // debug temporário — remova quando estiver tudo ok
-    // console.log('[configs] tema aplicado:', html.dataset.theme);
-
+    html.dataset.theme       = state.theme;
+    html.dataset.hideValues  = String(state['hide-values']);
     syncUI();
     document.dispatchEvent(new CustomEvent('settings:change', { detail: state }));
-    if (window.Dash?.chart?.render) window.Dash.chart.render();
   }
 
   function syncUI() {
@@ -55,17 +45,21 @@
       const check = c.querySelector('.theme-check');
       if (check) check.style.opacity = on ? '1' : '0';
     });
-    $$('.segmented [data-density]').forEach(b => {
-      b.setAttribute('aria-checked', String(b.dataset.density === state.density));
+    $$('.segmented [data-currency]').forEach(b => {
+      b.setAttribute('aria-checked', String(b.dataset.currency === state.currency));
+    });
+    $$('.segmented [data-decimals]').forEach(b => {
+      b.setAttribute('aria-checked', String(+b.dataset.decimals === +state.decimals));
+    });
+    $$('.segmented [data-period]').forEach(b => {
+      b.setAttribute('aria-checked', String(b.dataset.period === state.defaultPeriod));
     });
     $$('input[data-pref]').forEach(input => {
       input.checked = !!state[input.dataset.pref];
     });
   }
 
-  /* ---------------------------------------------------------
-     PAINEL (abrir / fechar)
-     --------------------------------------------------------- */
+  /* ===== PAINEL ===== */
   const panel    = $('#settings');
   const overlay  = $('#settingsOverlay');
   const openBtn  = $('#settingsBtn');
@@ -77,57 +71,61 @@
     panel.setAttribute('aria-hidden', String(!open));
     document.body.classList.toggle('settings-open', open);
     if (openBtn) openBtn.setAttribute('aria-expanded', String(open));
-
     if (open) {
       requestAnimationFrame(() => {
         panel.querySelector('.theme-card')?.focus({ preventScroll: true });
       });
     }
   }
-
   function togglePanel() {
     const isOpen = panel?.classList.contains('is-open');
     setPanel(!isOpen);
   }
 
-  // ✅ toggle no botão da engrenagem (abre E fecha)
-  openBtn?.addEventListener('click', (e) => {
+  openBtn?.addEventListener('click', e => {
     e.stopPropagation();
     togglePanel();
   });
-
-  // ✅ fecha no X
-  closeBtn?.addEventListener('click', (e) => {
+  closeBtn?.addEventListener('click', e => {
     e.stopPropagation();
     setPanel(false);
   });
-
-  // ✅ fecha clicando fora (overlay)
   overlay?.addEventListener('click', () => setPanel(false));
-
-  // ✅ fecha com Esc
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') setPanel(false);
   });
 
-  /* ---------------------------------------------------------
-     INTERAÇÕES DO PAINEL
-     --------------------------------------------------------- */
+  /* ===== INTERAÇÕES DO PAINEL ===== */
   panel?.addEventListener('click', e => {
     const themeCard = e.target.closest('.theme-card');
     if (themeCard) {
-      const value = themeCard.dataset.themeValue;
-      if (!value) return;
-      state.theme = value;
-      save();
-      apply();
+      state.theme = themeCard.dataset.themeValue;
+      save(); apply();
       return;
     }
-
-    const densityBtn = e.target.closest('.segmented [data-density]');
-    if (densityBtn) {
-      state.density = densityBtn.dataset.density;
+    const currencyBtn = e.target.closest('[data-currency]');
+    if (currencyBtn) {
+      state.currency = currencyBtn.dataset.currency;
+      save(); apply();
+      return;
+    }
+    const decBtn = e.target.closest('[data-decimals]');
+    if (decBtn) {
+      state.decimals = +decBtn.dataset.decimals;
+      save(); apply();
+      return;
+    }
+    const perBtn = e.target.closest('[data-period]');
+    if (perBtn) {
+      state.defaultPeriod = perBtn.dataset.period;
+      save(); apply();
+      return;
+    }
+    const presBtn = e.target.closest('#enterPresentation');
+    if (presBtn) {
+      state.presentation = true;
       save();
+      setPanel(false);
       apply();
     }
   });
@@ -136,20 +134,16 @@
     const input = e.target.closest('input[data-pref]');
     if (input) {
       state[input.dataset.pref] = input.checked;
-      save();
-      apply();
+      save(); apply();
     }
   });
 
   $('#resetSettings')?.addEventListener('click', () => {
     state = { ...DEFAULTS };
-    save();
-    apply();
+    save(); apply();
   });
 
-  /* ---------------------------------------------------------
-     API PÚBLICA
-     --------------------------------------------------------- */
+  /* ===== API PÚBLICA ===== */
   window.Settings = {
     get:    (k) => (k ? state[k] : { ...state }),
     set:    (k, v) => { state[k] = v; save(); apply(); },
@@ -159,6 +153,6 @@
     toggle: togglePanel,
   };
 
-  /* BOOT */
+  /* ===== BOOT ===== */
   apply();
 })();

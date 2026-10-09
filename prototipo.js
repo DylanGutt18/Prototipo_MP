@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · gráficos · período · popovers · toast · busca · meta
+   prototipo.js — menu · gráficos · filiais · meta · período · popovers
    ========================================================================== */
 (() => {
   'use strict';
@@ -19,19 +19,13 @@
   const CURRENCY_SYMBOL = { BRL: 'R$', USD: '$', EUR: '€' };
   const EXCHANGE = { BRL: 1, USD: 0.182, EUR: 0.167 };
 
-  function currentCurrency() {
-    return window.Settings?.get?.('currency') || 'BRL';
-  }
-
-  function convertFromBRL(valueBRL, currency) {
-    return valueBRL * (EXCHANGE[currency] || 1);
-  }
+  const currentCurrency = () => window.Settings?.get?.('currency') || 'BRL';
+  const convertFromBRL = (v, c) => v * (EXCHANGE[c] || 1);
 
   function formatMoney(valueBRL, opts = {}) {
     const currency = opts.currency || currentCurrency();
     const compact = opts.compact !== false;
     const converted = convertFromBRL(valueBRL, currency);
-
     const options = {
       style: 'currency',
       currency,
@@ -42,10 +36,21 @@
       options.notation = 'compact';
       options.compactDisplay = 'short';
     }
-    return new Intl.NumberFormat(
-      CURRENCY_LOCALE[currency] || 'pt-BR',
-      options
-    ).format(converted);
+    return new Intl.NumberFormat(CURRENCY_LOCALE[currency] || 'pt-BR', options).format(converted);
+  }
+
+  /* ===== FILIAIS ===== */
+  const FILIAIS = {
+    campinas: { nome: 'Campinas', pesoReceita: 0.42, pesoDespesa: 0.38 },
+    jundiai:  { nome: 'Jundiaí',  pesoReceita: 0.31, pesoDespesa: 0.35 },
+    saopaulo: { nome: 'São Paulo', pesoReceita: 0.27, pesoDespesa: 0.27 },
+  };
+  const FILIAL_ORDER = ['campinas', 'jundiai', 'saopaulo'];
+
+  function getSelectedBranches() {
+    const s = window.Settings?.get?.('selectedBranches');
+    if (Array.isArray(s) && s.length) return s.filter(k => FILIAIS[k]);
+    return [...FILIAL_ORDER];
   }
 
   /* ===== DATASETS ===== */
@@ -67,16 +72,13 @@
         { label: 'Novos', value: 42, color: '--chart-1' },
       ],
       barras: [
-        { label: 'Seg', value: 4.5 },{ label: 'Ter', value: 5.2 },
-        { label: 'Qua', value: 4.8 },{ label: 'Qui', value: 5.5 },
-        { label: 'Sex', value: 6.2 },{ label: 'Sáb', value: 3.8 },
+        { label: 'Seg', value: 4.5 },{ label: 'Ter', value: 5.2 },{ label: 'Qua', value: 4.8 },
+        { label: 'Qui', value: 5.5 },{ label: 'Sex', value: 6.2 },{ label: 'Sáb', value: 3.8 },
         { label: 'Dom', value: 2.1 },
       ],
       topProdutos: [
-        { label: 'Notebook Pro 15', value: 12000 },
-        { label: 'Monitor 27"', value: 9000 },
-        { label: 'Teclado Mec.', value: 7000 },
-        { label: 'Headset BT', value: 5000 },
+        { label: 'Notebook Pro 15', value: 12000 },{ label: 'Monitor 27"', value: 9000 },
+        { label: 'Teclado Mec.', value: 7000 },{ label: 'Headset BT', value: 5000 },
         { label: 'Mouse Ergo', value: 3000 },
       ],
     },
@@ -97,18 +99,14 @@
         { label: 'Novos', value: 39, color: '--chart-1' },
       ],
       barras: [
-        { label: 'Out', value: 24 },{ label: 'Nov', value: 28 },
-        { label: 'Dez', value: 31 },{ label: 'Jan', value: 26 },
-        { label: 'Fev', value: 30 },{ label: 'Mar', value: 34 },
-        { label: 'Abr', value: 29 },{ label: 'Mai', value: 33 },
-        { label: 'Jun', value: 36 },{ label: 'Jul', value: 31 },
-        { label: 'Ago', value: 38 },{ label: 'Set', value: 41 },
+        { label: 'Out', value: 24 },{ label: 'Nov', value: 28 },{ label: 'Dez', value: 31 },
+        { label: 'Jan', value: 26 },{ label: 'Fev', value: 30 },{ label: 'Mar', value: 34 },
+        { label: 'Abr', value: 29 },{ label: 'Mai', value: 33 },{ label: 'Jun', value: 36 },
+        { label: 'Jul', value: 31 },{ label: 'Ago', value: 38 },{ label: 'Set', value: 41 },
       ],
       topProdutos: [
-        { label: 'Notebook Pro 15', value: 34000 },
-        { label: 'Monitor 27"', value: 27000 },
-        { label: 'Teclado Mec.', value: 21000 },
-        { label: 'Headset BT', value: 15000 },
+        { label: 'Notebook Pro 15', value: 34000 },{ label: 'Monitor 27"', value: 27000 },
+        { label: 'Teclado Mec.', value: 21000 },{ label: 'Headset BT', value: 15000 },
         { label: 'Mouse Ergo', value: 10000 },
       ],
     },
@@ -129,16 +127,12 @@
         { label: 'Novos', value: 36, color: '--chart-1' },
       ],
       barras: [
-        { label: 'Q1', value: 68 },
-        { label: 'Q2', value: 90 },
-        { label: 'Q3', value: 118 },
-        { label: 'Q4', value: 137 },
+        { label: 'Q1', value: 68 },{ label: 'Q2', value: 90 },
+        { label: 'Q3', value: 118 },{ label: 'Q4', value: 137 },
       ],
       topProdutos: [
-        { label: 'Notebook Pro 15', value: 128000 },
-        { label: 'Monitor 27"', value: 96000 },
-        { label: 'Teclado Mec.', value: 78000 },
-        { label: 'Headset BT', value: 54000 },
+        { label: 'Notebook Pro 15', value: 128000 },{ label: 'Monitor 27"', value: 96000 },
+        { label: 'Teclado Mec.', value: 78000 },{ label: 'Headset BT', value: 54000 },
         { label: 'Mouse Ergo', value: 34000 },
       ],
     },
@@ -156,20 +150,40 @@
   const visivel = { receita: true, despesa: true };
   let hasBooted = false;
 
+  /* ===== DADOS FILTRADOS PELAS FILIAIS ===== */
+  function getDados(periodo = periodoAtual) {
+    const base = DATASETS[periodo];
+    if (!base) return null;
+
+    const selecionadas = getSelectedBranches();
+    const pesoR = selecionadas.reduce((s, k) => s + (FILIAIS[k]?.pesoReceita || 0), 0);
+    const pesoD = selecionadas.reduce((s, k) => s + (FILIAIS[k]?.pesoDespesa || 0), 0);
+
+    return {
+      ...base,
+      receita: base.receita.map(v => v * pesoR),
+      despesa: base.despesa.map(v => v * pesoD),
+      barras: base.barras.map(b => ({ ...b, value: b.value * pesoR })),
+      topProdutos: base.topProdutos.map(p => ({ ...p, value: p.value * pesoR })),
+      categorias: base.categorias,
+      origem: base.origem,
+      variacaoReceita: base.variacaoReceita,
+      variacaoDespesa: base.variacaoDespesa,
+      labels: base.labels,
+    };
+  }
+
   function receitaBRL(periodo = periodoAtual) {
-    const d = DATASETS[periodo];
-    if (!d) return 0;
-    return d.receita.reduce((s, v) => s + v, 0) * 1000;
+    const d = getDados(periodo);
+    return d ? d.receita.reduce((s, v) => s + v, 0) * 1000 : 0;
   }
   function despesaBRL(periodo = periodoAtual) {
-    const d = DATASETS[periodo];
-    if (!d) return 0;
-    return d.despesa.reduce((s, v) => s + v, 0) * 1000;
+    const d = getDados(periodo);
+    return d ? d.despesa.reduce((s, v) => s + v, 0) * 1000 : 0;
   }
 
   /* ===== MENU MOBILE ===== */
   const body = document.body;
-
   const setMenu = (open) => {
     body.classList.toggle('menu-open', open);
     const btn = $('#menuBtn');
@@ -178,10 +192,7 @@
       btn.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
     }
   };
-
-  $('#menuBtn')?.addEventListener('click', () =>
-    setMenu(!body.classList.contains('menu-open'))
-  );
+  $('#menuBtn')?.addEventListener('click', () => setMenu(!body.classList.contains('menu-open')));
   $('#overlay')?.addEventListener('click', () => setMenu(false));
   $('#menu')?.addEventListener('click', e => {
     const item = e.target.closest('.menu-item');
@@ -190,9 +201,7 @@
     item.classList.add('active');
     setMenu(false);
   });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') setMenu(false);
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   window.matchMedia('(min-width: 769px)').addEventListener('change', e => {
     if (e.matches) setMenu(false);
   });
@@ -209,18 +218,14 @@
       p.classList.remove('is-open');
       p.setAttribute('aria-hidden', 'true');
     });
-    [perfilBtn, ajudaBtn].forEach(b => {
-      if (b) b.setAttribute('aria-expanded', 'false');
-    });
+    [perfilBtn, ajudaBtn].forEach(b => { if (b) b.setAttribute('aria-expanded', 'false'); });
   }
-
   function abrirPop(pop, btn) {
     fecharPops();
     pop.classList.add('is-open');
     pop.setAttribute('aria-hidden', 'false');
     btn.setAttribute('aria-expanded', 'true');
   }
-
   perfilBtn?.addEventListener('click', e => {
     e.stopPropagation();
     perfilPop.classList.contains('is-open') ? fecharPops() : abrirPop(perfilPop, perfilBtn);
@@ -244,8 +249,7 @@
     t.innerHTML = `
       <span class="toast-icon">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-             stroke="currentColor" stroke-width="2.4"
-             stroke-linecap="round" stroke-linejoin="round">
+             stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="5 12 10 17 19 7"/>
         </svg>
       </span>
@@ -264,7 +268,6 @@
     atalhos: 'Atalhos: Ctrl+K, Ctrl+/, Shift+?',
     sobre: 'Painel v1.0 · build 2026.10',
   };
-
   $$('.pop-item[data-action]').forEach(item => {
     item.addEventListener('click', e => {
       e.stopPropagation();
@@ -307,21 +310,18 @@
     return d;
   };
 
-  /* ===== GRÁFICO PRINCIPAL ===== */
+  /* ===== GRÁFICO ===== */
   const Chart = (() => {
     const host = $('#chart');
     if (!host) return { render() {} };
-
     let chartData = null;
 
     const build = (data) => {
       const { receita, despesa, labels } = data;
       const max = Math.max(...receita, ...despesa) * 1.12;
       const n = receita.length;
-
       const xAt = i => (i / (n - 1)) * 100;
       const yAt = v => (1 - v / max) * 100;
-
       const ptsR = receita.map((v, i) => [xAt(i), yAt(v)]);
       const ptsD = despesa.map((v, i) => [xAt(i), yAt(v)]);
 
@@ -341,10 +341,7 @@
       defs.appendChild(grad);
       svg.appendChild(defs);
 
-      const grid = svgEl('g', {
-        stroke: 'var(--chart-grid)', 'stroke-width': '1',
-        'vector-effect': 'non-scaling-stroke',
-      });
+      const grid = svgEl('g', { stroke: 'var(--chart-grid)', 'stroke-width': '1', 'vector-effect': 'non-scaling-stroke' });
       for (let i = 0; i <= 4; i++) {
         const y = (i / 4) * 100;
         grid.appendChild(svgEl('line', { x1: '0', y1: y, x2: '100', y2: y }));
@@ -430,8 +427,7 @@
         cursor.style.left = pR[0] + '%';
 
         const label = chartData.labels[idx];
-        const labelPrefix = periodoAtual === '1a' ? 'Mês'
-                          : periodoAtual === '90d' ? 'Semana' : 'Dia';
+        const labelPrefix = periodoAtual === '1a' ? 'Mês' : periodoAtual === '90d' ? 'Semana' : 'Dia';
 
         tooltip.innerHTML = `
           <div class="tt-label">${labelPrefix} ${label}</div>
@@ -469,7 +465,8 @@
     };
 
     const render = () => {
-      const data = DATASETS[periodoAtual];
+      const data = getDados();
+      if (!data) return;
       host.innerHTML = '';
       host.appendChild(build(data));
     };
@@ -496,36 +493,33 @@
     const bom = invertido ? !subiu : subiu;
     badgeEl.classList.remove('pos', 'neg');
     badgeEl.classList.add(bom ? 'pos' : 'neg');
-    badgeEl.querySelector('.badge-icon path').setAttribute(
-      'd',
-      subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'
+    badgeEl.querySelector('.badge-icon').firstElementChild.setAttribute(
+      'd', subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'
     );
     badgeEl.querySelector('.badge-value').textContent =
       Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
   }
 
-  function atualizarCards(periodo) {
-    const d = DATASETS[periodo];
+  function atualizarCards() {
+    const d = getDados();
     if (!d) return;
-
     const rEl = $('#cardReceita .num');
     const dEl = $('#cardDespesa .num');
     const rBadge = $('#cardReceita .card-badge');
     const dBadge = $('#cardDespesa .card-badge');
 
-    if (rEl) animateMoney(rEl, receitaBRL(periodo));
-    if (dEl) animateMoney(dEl, despesaBRL(periodo));
+    if (rEl) animateMoney(rEl, receitaBRL());
+    if (dEl) animateMoney(dEl, despesaBRL());
     if (rBadge) atualizarBadge(rBadge, d.variacaoReceita, false);
     if (dBadge) atualizarBadge(dBadge, d.variacaoDespesa, true);
   }
 
-  /* ===== DONUT INTERATIVO ===== */
+  /* ===== DONUT ===== */
   const Donut = (id, data, options = {}) => {
     const host = document.getElementById(id);
     if (!host) return;
 
     const totalBRL = options.totalBRL || 0;
-
     const size = 140, stroke = 18;
     const r = (size - stroke) / 2;
     const cx = size / 2, cy = size / 2;
@@ -533,7 +527,6 @@
     const totalPct = data.reduce((s, d) => s + d.value, 0) || 1;
 
     const svg = svgEl('svg', { viewBox: `0 0 ${size} ${size}` });
-
     svg.appendChild(svgEl('circle', {
       cx, cy, r, fill: 'none',
       stroke: 'var(--bg-3)', 'stroke-width': stroke,
@@ -542,10 +535,9 @@
     const groups = [];
     let acc = 0;
 
-    data.forEach((d, i) => {
+    data.forEach((d) => {
       const len = (d.value / totalPct) * circ;
       const midAngle = (-90 + ((acc + len / 2) / circ) * 360) * Math.PI / 180;
-
       const g = svgEl('g', { class: 'donut-slice-group' });
       const slice = svgEl('circle', {
         cx, cy, r, fill: 'none',
@@ -565,7 +557,6 @@
         pct: Math.round((d.value / totalPct) * 100),
         label: d.label,
       });
-
       acc += len;
     });
 
@@ -584,11 +575,9 @@
 
     function activate(i) {
       activeIdx = i;
-
       groups.forEach((grp, idx) => {
         const isActive = idx === i;
         const dimmed = i !== -1 && !isActive;
-
         if (isActive) {
           const dx = Math.cos(grp.midAngle) * 9;
           const dy = Math.sin(grp.midAngle) * 9;
@@ -601,11 +590,9 @@
           grp.slice.setAttribute('stroke-width', String(stroke));
         }
       });
-
       if (i === -1) {
         labelEl.textContent = 'Total';
         valueEl.textContent = formatMoney(totalBRL);
-        valueEl.style.fontSize = '14px';
       } else {
         labelEl.textContent = groups[i].label;
         valueEl.textContent = formatMoney(groups[i].actualBRL);
@@ -631,20 +618,15 @@
       const item = document.createElement('span');
       item.innerHTML = `<i style="background:var(${data[i].color})"></i>${grp.label}<b>${grp.pct}%</b>`;
       item.addEventListener('click', () => activate(activeIdx === i ? -1 : i));
-      item.addEventListener('mouseenter', () => item.classList.toggle('is-active', activeIdx === i));
       legend.appendChild(item);
     });
     host.appendChild(legend);
-
-    // guarda referência pra resetar quando trocar período
-    host._donutReset = () => activate(-1);
   };
 
   /* ===== BARRAS ===== */
   const Bars = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
-
     const VW = 360, VH = 170;
     const pad = { t: 12, r: 4, b: 24, l: 4 };
     const iw = VW - pad.l - pad.r;
@@ -659,10 +641,7 @@
       'aria-hidden': 'true',
     });
 
-    const grid = svgEl('g', {
-      stroke: 'var(--chart-grid)', 'stroke-width': '1',
-      'vector-effect': 'non-scaling-stroke',
-    });
+    const grid = svgEl('g', { stroke: 'var(--chart-grid)', 'stroke-width': '1', 'vector-effect': 'non-scaling-stroke' });
     for (let i = 0; i <= 3; i++) {
       const y = pad.t + (ih / 3) * i;
       grid.appendChild(svgEl('line', { x1: pad.l, y1: y, x2: VW - pad.r, y2: y }));
@@ -726,9 +705,7 @@
           <span class="hbar-label">${d.label}</span>
           <span class="hbar-value">${d.value}<small>/${d.max}</small></span>
         </div>
-        <div class="hbar-track">
-          <div class="hbar-fill" style="width:0%"></div>
-        </div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:0%"></div></div>
       `;
       host.appendChild(row);
       requestAnimationFrame(() => {
@@ -766,29 +743,34 @@
     });
   };
 
-  /* ===== META DE RECEITA ===== */
-  function getGoalRefs() {
-    return {
-      input: $('#goalInput'),
-      symbol: $('#goalCurrencySymbol'),
-      progress: $('#goalProgress'),
-      fill: $('#goalProgressFill'),
-      percent: $('#goalPercent'),
-      remaining: $('#goalRemaining'),
-    };
-  }
-
+  /* ===== CARD DE META ===== */
   function updateGoalUI() {
-    const { input, symbol, progress, fill, percent, remaining } = getGoalRefs();
-    if (!input) return;
+    // ---- painel de configurações ----
+    const input = $('#goalInput');
+    const symbol = $('#goalCurrencySymbol');
+    const progress = $('#goalProgress');
+    const fill = $('#goalProgressFill');
+    const percent = $('#goalPercent');
+    const remaining = $('#goalRemaining');
+
+    // ---- card do dashboard ----
+    const metaEmpty = $('#metaEmpty');
+    const metaValueWrap = $('#metaValueWrap');
+    const metaValue = $('#metaValue');
+    const metaSub = $('#metaSub');
+    const metaTrack = $('#metaTrack');
+    const metaFill = $('#metaFill');
+    const metaRemaining = $('#metaRemaining');
+    const metaBadge = $('#metaBadge');
+    const metaBadgeValue = $('#metaBadgeValue');
 
     const currency = currentCurrency();
     const goalBRL = window.Settings?.get?.('goalBRL') || 0;
 
     if (symbol) symbol.textContent = CURRENCY_SYMBOL[currency] || 'R$';
 
-    // valor no input (só atualiza se não está sendo editado)
-    if (document.activeElement !== input) {
+    // input
+    if (input && document.activeElement !== input) {
       const locale = CURRENCY_LOCALE[currency] || 'pt-BR';
       const displayValue = convertFromBRL(goalBRL, currency);
       input.value = goalBRL > 0
@@ -796,17 +778,13 @@
         : '';
     }
 
-    if (!progress) return;
-    if (goalBRL <= 0) {
-      progress.hidden = true;
-      return;
-    }
-    progress.hidden = false;
+    // painel progress
+    if (progress) progress.hidden = goalBRL <= 0;
 
     const revenue = receitaBRL();
-    const pct = Math.min(100, (revenue / goalBRL) * 100);
+    const pct = goalBRL > 0 ? Math.min(100, (revenue / goalBRL) * 100) : 0;
     const remainingBRL = Math.max(0, goalBRL - revenue);
-    const complete = pct >= 100;
+    const complete = goalBRL > 0 && pct >= 100;
 
     if (fill) {
       fill.style.width = pct + '%';
@@ -817,10 +795,47 @@
       percent.classList.toggle('is-complete', complete);
     }
     if (remaining) {
-      remaining.textContent = complete
-        ? 'Meta atingida!'
-        : `Faltam ${formatMoney(remainingBRL)}`;
+      remaining.textContent = goalBRL <= 0
+        ? ''
+        : complete
+          ? 'Meta atingida!'
+          : `Faltam ${formatMoney(remainingBRL)}`;
     }
+
+    // card do dashboard
+    if (!metaEmpty) return;
+
+    if (goalBRL <= 0) {
+      metaEmpty.hidden = false;
+      metaValueWrap.hidden = true;
+      metaTrack.hidden = true;
+      metaRemaining.hidden = true;
+      if (metaBadge) metaBadge.hidden = true;
+      return;
+    }
+
+    metaEmpty.hidden = true;
+    metaValueWrap.hidden = false;
+    metaTrack.hidden = false;
+    metaRemaining.hidden = false;
+    if (metaBadge) metaBadge.hidden = false;
+
+    if (metaValue) metaValue.textContent = formatMoney(revenue);
+    if (metaSub) metaSub.textContent = `de ${formatMoney(goalBRL)}`;
+    if (metaFill) {
+      metaFill.style.width = pct + '%';
+      metaFill.classList.toggle('is-complete', complete);
+    }
+    if (metaRemaining) {
+      metaRemaining.innerHTML = complete
+        ? '<strong>Meta atingida!</strong>'
+        : `Faltam <strong>${formatMoney(remainingBRL)}</strong>`;
+    }
+    if (metaBadge) {
+      metaBadge.classList.remove('accent', 'pos');
+      metaBadge.classList.add(complete ? 'pos' : 'accent');
+    }
+    if (metaBadgeValue) metaBadgeValue.textContent = Math.round(pct) + '%';
   }
 
   // input da meta
@@ -835,62 +850,108 @@
       const goalBRL = rate > 0 ? num / rate : 0;
       window.Settings?.set?.('goalBRL', goalBRL);
     });
-
     goalInput.addEventListener('focus', () => {
       goalInput.value = goalInput.value.replace(/\D/g, '');
     });
-
-    goalInput.addEventListener('blur', () => {
-      updateGoalUI();
-    });
+    goalInput.addEventListener('blur', () => { updateGoalUI(); });
   }
+
+  /* ===== FILTRO DE FILIAIS ===== */
+  const filterBtn = $('#filterBtn');
+  const filterMenu = $('#filterMenu');
+  const filterCount = $('#filterCount');
+  const filterClear = $('#filterClear');
+
+  function updateFiliaisLabel() {
+    const sel = getSelectedBranches();
+    const label = $('#filiaisLabel');
+    if (!label) return;
+
+    if (sel.length === FILIAL_ORDER.length) {
+      label.textContent = 'Todas as filiais';
+    } else if (sel.length === 1) {
+      label.textContent = FILIAIS[sel[0]].nome;
+    } else {
+      label.textContent = sel.map(k => FILIAIS[k].nome).join(' + ');
+    }
+    if (filterCount) filterCount.textContent = sel.length;
+  }
+
+  function setFilterOpen(open) {
+    if (!filterMenu) return;
+    filterMenu.hidden = !open;
+    filterBtn?.setAttribute('aria-expanded', String(open));
+  }
+
+  filterBtn?.addEventListener('click', e => {
+    e.stopPropagation();
+    setFilterOpen(filterMenu.hidden);
+  });
+
+  filterMenu?.addEventListener('click', e => e.stopPropagation());
+
+  filterMenu?.addEventListener('change', e => {
+    const input = e.target.closest('input[type="checkbox"]');
+    if (!input) return;
+
+    const marcadas = $$('#filterMenu input[type="checkbox"]:checked').map(i => i.value);
+    const final = marcadas.length ? marcadas : FILIAL_ORDER.slice();
+    if (!marcadas.length) {
+      $$('#filterMenu input[type="checkbox"]').forEach(i => { i.checked = true; });
+    }
+    window.Settings?.set?.('selectedBranches', final);
+  });
+
+  filterClear?.addEventListener('click', () => {
+    $$('#filterMenu input[type="checkbox"]').forEach(i => { i.checked = true; });
+    window.Settings?.set?.('selectedBranches', [...FILIAL_ORDER]);
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.filter-wrap')) setFilterOpen(false);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') setFilterOpen(false);
+  });
 
   /* ===== RENDER GERAL ===== */
   function renderAll(periodo) {
     periodoAtual = periodo || periodoAtual;
-    const d = DATASETS[periodoAtual];
+    const d = getDados();
     if (!d) return;
 
     Chart.render();
-    atualizarCards(periodoAtual);
-
+    atualizarCards();
     Donut('donutCategorias', d.categorias, { totalBRL: despesaBRL() });
     Donut('donutOrigem', d.origem, { totalBRL: receitaBRL() });
-
     Bars('barPeriodo', d.barras);
     TopList('topProdutos', d.topProdutos);
     StockList('estoqueCritico', ESTOQUE);
-
     updateGoalUI();
   }
 
-  /* ===== CHIPS DE PERÍODO ===== */
+  /* ===== PERÍODO ===== */
   function setPeriodo(p) {
     if (!DATASETS[p]) return;
     periodoAtual = p;
-    $$('.range-picker .chip').forEach(c =>
-      c.classList.toggle('active', c.dataset.period === p)
-    );
+    $$('.range-picker .chip').forEach(c => c.classList.toggle('active', c.dataset.period === p));
     renderAll(p);
   }
-
   $$('.range-picker .chip').forEach(chip => {
     chip.addEventListener('click', () => setPeriodo(chip.dataset.period));
   });
 
-  /* ===== MODO APRESENTAÇÃO ===== */
+  /* ===== APRESENTAÇÃO ===== */
   function setPresentation(on) {
     document.body.classList.toggle('presentation-mode', on);
     const exit = $('#presentationExit');
     if (exit) exit.hidden = !on;
     if (on) window.Settings?.close?.();
   }
-
   $('#presentationExit')?.addEventListener('click', () => {
     setPresentation(false);
     window.Settings?.set?.('presentation', false);
   });
-
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && document.body.classList.contains('presentation-mode')) {
       setPresentation(false);
@@ -900,15 +961,16 @@
 
   /* ===== BUSCA ===== */
   const SEARCH_TARGETS = [
-    { id: 'contentHeader',   label: 'Visão Geral',          keywords: ['visão', 'geral', 'resumo', 'home'] },
-    { id: 'cardReceita',     label: 'Receita do período',   keywords: ['receita', 'entrada', 'ganho'] },
-    { id: 'cardDespesa',     label: 'Despesa do período',   keywords: ['despesa', 'gasto', 'saída'] },
-    { id: 'panelGrafico',    label: 'Receita × Despesa',    keywords: ['gráfico', 'comparativo', 'linha'] },
+    { id: 'contentHeader', label: 'Visão Geral', keywords: ['visão', 'geral', 'resumo', 'home'] },
+    { id: 'cardReceita', label: 'Receita do período', keywords: ['receita', 'entrada', 'ganho'] },
+    { id: 'cardDespesa', label: 'Despesa do período', keywords: ['despesa', 'gasto', 'saída'] },
+    { id: 'cardMeta', label: 'Meta de receita', keywords: ['meta', 'objetivo', 'goal'] },
+    { id: 'panelGrafico', label: 'Receita × Despesa', keywords: ['gráfico', 'comparativo', 'linha'] },
     { id: 'panelCategorias', label: 'Gastos por categoria', keywords: ['categoria', 'gastos', 'marketing', 'salários', 'operacional', 'infraestrutura'] },
-    { id: 'panelOrigem',     label: 'Origem da receita',    keywords: ['origem', 'recorrente', 'novos'] },
-    { id: 'panelBarras',     label: 'Receita no período',   keywords: ['barras', 'receita'] },
-    { id: 'panelEstoque',    label: 'Estoque crítico',      keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
-    { id: 'panelTop',        label: 'Top produtos',         keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
+    { id: 'panelOrigem', label: 'Origem da receita', keywords: ['origem', 'recorrente', 'novos'] },
+    { id: 'panelBarras', label: 'Receita no período', keywords: ['barras', 'receita'] },
+    { id: 'panelEstoque', label: 'Estoque crítico', keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
+    { id: 'panelTop', label: 'Top produtos', keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
     ...['Notebook Pro 15', 'Monitor 27"', 'Teclado Mec.', 'Headset BT', 'Mouse Ergo'].map(name => ({
       id: 'panelTop', label: name, keywords: [name.toLowerCase()], child: name,
     })),
@@ -918,9 +980,8 @@
   const searchResults = $('#searchResults');
   let activeResultIdx = -1;
 
-  function normalizar(s) {
-    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
+  const normalizar = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
   function buscar(termo) {
     const q = normalizar(termo.trim());
     if (!q) return [];
@@ -942,11 +1003,9 @@
     lista.forEach(t => {
       const btn = document.createElement('button');
       btn.className = 'search-result';
-      btn.dataset.targetId = t.id;
       btn.innerHTML = `
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
-             stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/>
         </svg>
         <span>${t.label}</span>
@@ -1022,21 +1081,39 @@
     setInterval(tick, 30_000);
   };
 
-  /* ===== REAGE A MUDANÇAS ===== */
-  let snap = { currency: null, period: null };
+  /* ===== REAGE A MUDANÇAS DE SETTINGS ===== */
+  let snap = { currency: null, period: null, filiais: null, goalBRL: null };
 
   document.addEventListener('settings:change', (e) => {
     if (!hasBooted) return;
     const s = e.detail;
-    const currChanged = snap.currency !== s.currency;
-    const perChanged = snap.period !== s.defaultPeriod;
+
+    const currChanged   = snap.currency !== s.currency;
+    const perChanged    = snap.period !== s.defaultPeriod;
+    const filialChanged = JSON.stringify(snap.filiais) !== JSON.stringify(s.selectedBranches);
+    const goalChanged   = snap.goalBRL !== s.goalBRL;
+
     snap.currency = s.currency;
     snap.period = s.defaultPeriod;
+    snap.filiais = s.selectedBranches ? [...s.selectedBranches] : null;
+    snap.goalBRL = s.goalBRL;
 
-    if (perChanged) setPeriodo(s.defaultPeriod);
-    else if (currChanged) renderAll(periodoAtual);
+    // Sincroniza checkboxes do filtro se a mudança veio de fora
+    if (filialChanged && s.selectedBranches) {
+      $$('#filterMenu input[type="checkbox"]').forEach(inp => {
+        inp.checked = s.selectedBranches.includes(inp.value);
+      });
+      updateFiliaisLabel();
+    }
 
-    updateGoalUI();
+    if (perChanged) {
+      setPeriodo(s.defaultPeriod);
+    } else if (currChanged || filialChanged) {
+      renderAll(periodoAtual);
+    } else if (goalChanged) {
+      updateGoalUI();
+    }
+
     setPresentation(s.presentation);
   });
 
@@ -1048,6 +1125,16 @@
     const s = window.Settings?.get?.() || {};
     snap.currency = s.currency || 'BRL';
     snap.period = s.defaultPeriod || '1a';
+    snap.filiais = s.selectedBranches ? [...s.selectedBranches] : null;
+    snap.goalBRL = s.goalBRL;
+
+    // Sincroniza UI do filtro
+    if (Array.isArray(s.selectedBranches)) {
+      $$('#filterMenu input[type="checkbox"]').forEach(inp => {
+        inp.checked = s.selectedBranches.includes(inp.value);
+      });
+    }
+    updateFiliaisLabel();
 
     setPeriodo(snap.period);
     setPresentation(s.presentation);
@@ -1060,11 +1147,5 @@
     boot();
   }
 
-  window.Dash = {
-    renderAll,
-    setPeriodo,
-    formatMoney,
-    setPresentation,
-    updateGoalUI,
-  };
+  window.Dash = { renderAll, setPeriodo, formatMoney, setPresentation, updateGoalUI };
 })();

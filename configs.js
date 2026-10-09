@@ -1,5 +1,5 @@
 /* ==========================================================================
-   configs.js — persistência + painel de configurações
+   configs.js
    ========================================================================== */
 (() => {
   'use strict';
@@ -15,6 +15,7 @@
     presentation: false,
     'hide-values': false,
     goalBRL: 0,
+    selectedBranches: ['campinas', 'jundiai', 'saopaulo'],
   };
 
   let state = load();
@@ -29,7 +30,6 @@
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
   }
 
-  /* ===== APLICAÇÃO ===== */
   function apply() {
     const html = document.documentElement;
     html.dataset.theme      = state.theme;
@@ -56,7 +56,6 @@
     });
   }
 
-  /* ===== PAINEL ===== */
   const panel    = $('#settings');
   const overlay  = $('#settingsOverlay');
   const openBtn  = $('#settingsBtn');
@@ -74,10 +73,7 @@
       });
     }
   }
-  function togglePanel() {
-    const isOpen = panel?.classList.contains('is-open');
-    setPanel(!isOpen);
-  }
+  const togglePanel = () => setPanel(!panel?.classList.contains('is-open'));
 
   openBtn?.addEventListener('click', e => {
     e.stopPropagation();
@@ -92,7 +88,6 @@
     if (e.key === 'Escape') setPanel(false);
   });
 
-  /* ===== INTERAÇÕES DO PAINEL ===== */
   panel?.addEventListener('click', e => {
     const themeCard = e.target.closest('.theme-card');
     if (themeCard) {
@@ -130,20 +125,27 @@
   });
 
   $('#resetSettings')?.addEventListener('click', () => {
-    state = { ...DEFAULTS };
+    state = { ...DEFAULTS, selectedBranches: [...DEFAULTS.selectedBranches] };
     save(); apply();
   });
 
-  /* ===== API PÚBLICA ===== */
   window.Settings = {
     get:    (k) => (k ? state[k] : { ...state }),
-    set:    (k, v) => { state[k] = v; save(); apply(); },
-    reset:  () => { state = { ...DEFAULTS }; save(); apply(); },
+    set:    (k, v) => {
+      if (k === 'goalBRL') {
+        state.goalBRL = typeof v === 'number' ? v : parseFloat(v) || 0;
+      } else if (k === 'selectedBranches') {
+        state.selectedBranches = Array.isArray(v) && v.length ? [...v] : [...DEFAULTS.selectedBranches];
+      } else {
+        state[k] = v;
+      }
+      save(); apply();
+    },
+    reset:  () => { state = { ...DEFAULTS, selectedBranches: [...DEFAULTS.selectedBranches] }; save(); apply(); },
     open:   () => setPanel(true),
     close:  () => setPanel(false),
     toggle: togglePanel,
   };
 
-  /* ===== BOOT ===== */
   apply();
 })();

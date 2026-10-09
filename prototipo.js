@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · gráficos · período · popovers · toast · busca
+   prototipo.js — menu · gráficos · período · popovers · toast · busca · meta
    ========================================================================== */
 (() => {
   'use strict';
@@ -16,18 +16,27 @@
 
   /* ===== MOEDA ===== */
   const CURRENCY_LOCALE = { BRL: 'pt-BR', USD: 'en-US', EUR: 'de-DE' };
+  const CURRENCY_SYMBOL = { BRL: 'R$', USD: '$', EUR: '€' };
+  const EXCHANGE = { BRL: 1, USD: 0.182, EUR: 0.167 };
 
-  function formatMoney(value, opts = {}) {
-    const s = window.Settings?.get?.() || {};
-    const currency = opts.currency || s.currency || 'BRL';
-    const decimals = opts.decimals ?? s.decimals ?? 0;
-    const compact = opts.compact ?? true;
+  function currentCurrency() {
+    return window.Settings?.get?.('currency') || 'BRL';
+  }
+
+  function convertFromBRL(valueBRL, currency) {
+    return valueBRL * (EXCHANGE[currency] || 1);
+  }
+
+  function formatMoney(valueBRL, opts = {}) {
+    const currency = opts.currency || currentCurrency();
+    const compact = opts.compact !== false;
+    const converted = convertFromBRL(valueBRL, currency);
 
     const options = {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,
-      maximumFractionDigits: decimals,
+      maximumFractionDigits: 0,
     };
     if (compact) {
       options.notation = 'compact';
@@ -36,7 +45,7 @@
     return new Intl.NumberFormat(
       CURRENCY_LOCALE[currency] || 'pt-BR',
       options
-    ).format(value);
+    ).format(converted);
   }
 
   /* ===== DATASETS ===== */
@@ -48,14 +57,14 @@
       variacaoReceita: 6.2,
       variacaoDespesa: 2.1,
       categorias: [
-        { label: 'Marketing',      value: 32, color: '--chart-1' },
-        { label: 'Operacional',    value: 28, color: '--chart-2' },
-        { label: 'Salários',       value: 26, color: '--chart-3' },
+        { label: 'Marketing', value: 32, color: '--chart-1' },
+        { label: 'Operacional', value: 28, color: '--chart-2' },
+        { label: 'Salários', value: 26, color: '--chart-3' },
         { label: 'Infraestrutura', value: 14, color: '--chart-4' },
       ],
       origem: [
         { label: 'Recorrente', value: 58, color: '--chart-2' },
-        { label: 'Novos',      value: 42, color: '--chart-1' },
+        { label: 'Novos', value: 42, color: '--chart-1' },
       ],
       barras: [
         { label: 'Seg', value: 4.5 },{ label: 'Ter', value: 5.2 },
@@ -65,10 +74,10 @@
       ],
       topProdutos: [
         { label: 'Notebook Pro 15', value: 12000 },
-        { label: 'Monitor 27"',     value: 9000 },
-        { label: 'Teclado Mec.',    value: 7000 },
-        { label: 'Headset BT',      value: 5000 },
-        { label: 'Mouse Ergo',      value: 3000 },
+        { label: 'Monitor 27"', value: 9000 },
+        { label: 'Teclado Mec.', value: 7000 },
+        { label: 'Headset BT', value: 5000 },
+        { label: 'Mouse Ergo', value: 3000 },
       ],
     },
     '90d': {
@@ -78,14 +87,14 @@
       variacaoReceita: 14.8,
       variacaoDespesa: -1.5,
       categorias: [
-        { label: 'Marketing',      value: 28, color: '--chart-1' },
-        { label: 'Operacional',    value: 30, color: '--chart-2' },
-        { label: 'Salários',       value: 27, color: '--chart-3' },
+        { label: 'Marketing', value: 28, color: '--chart-1' },
+        { label: 'Operacional', value: 30, color: '--chart-2' },
+        { label: 'Salários', value: 27, color: '--chart-3' },
         { label: 'Infraestrutura', value: 15, color: '--chart-4' },
       ],
       origem: [
         { label: 'Recorrente', value: 61, color: '--chart-2' },
-        { label: 'Novos',      value: 39, color: '--chart-1' },
+        { label: 'Novos', value: 39, color: '--chart-1' },
       ],
       barras: [
         { label: 'Out', value: 24 },{ label: 'Nov', value: 28 },
@@ -97,10 +106,10 @@
       ],
       topProdutos: [
         { label: 'Notebook Pro 15', value: 34000 },
-        { label: 'Monitor 27"',     value: 27000 },
-        { label: 'Teclado Mec.',    value: 21000 },
-        { label: 'Headset BT',      value: 15000 },
-        { label: 'Mouse Ergo',      value: 10000 },
+        { label: 'Monitor 27"', value: 27000 },
+        { label: 'Teclado Mec.', value: 21000 },
+        { label: 'Headset BT', value: 15000 },
+        { label: 'Mouse Ergo', value: 10000 },
       ],
     },
     '1a': {
@@ -110,14 +119,14 @@
       variacaoReceita: 12.4,
       variacaoDespesa: 3.8,
       categorias: [
-        { label: 'Marketing',      value: 35, color: '--chart-1' },
-        { label: 'Operacional',    value: 30, color: '--chart-2' },
-        { label: 'Salários',       value: 20, color: '--chart-3' },
+        { label: 'Marketing', value: 35, color: '--chart-1' },
+        { label: 'Operacional', value: 30, color: '--chart-2' },
+        { label: 'Salários', value: 20, color: '--chart-3' },
         { label: 'Infraestrutura', value: 15, color: '--chart-4' },
       ],
       origem: [
         { label: 'Recorrente', value: 64, color: '--chart-2' },
-        { label: 'Novos',      value: 36, color: '--chart-1' },
+        { label: 'Novos', value: 36, color: '--chart-1' },
       ],
       barras: [
         { label: 'Q1', value: 68 },
@@ -127,24 +136,36 @@
       ],
       topProdutos: [
         { label: 'Notebook Pro 15', value: 128000 },
-        { label: 'Monitor 27"',     value: 96000 },
-        { label: 'Teclado Mec.',    value: 78000 },
-        { label: 'Headset BT',      value: 54000 },
-        { label: 'Mouse Ergo',      value: 34000 },
+        { label: 'Monitor 27"', value: 96000 },
+        { label: 'Teclado Mec.', value: 78000 },
+        { label: 'Headset BT', value: 54000 },
+        { label: 'Mouse Ergo', value: 34000 },
       ],
     },
   };
 
   const ESTOQUE = [
-    { label: 'Notebook Pro 15', value: 3,  max: 40 },
-    { label: 'Headset BT',      value: 5,  max: 35 },
-    { label: 'Monitor 27"',     value: 8,  max: 50 },
-    { label: 'Teclado Mec.',    value: 12, max: 60 },
-    { label: 'Mouse Ergo',      value: 22, max: 80 },
+    { label: 'Notebook Pro 15', value: 3, max: 40 },
+    { label: 'Headset BT', value: 5, max: 35 },
+    { label: 'Monitor 27"', value: 8, max: 50 },
+    { label: 'Teclado Mec.', value: 12, max: 60 },
+    { label: 'Mouse Ergo', value: 22, max: 80 },
   ];
 
   let periodoAtual = '1a';
   const visivel = { receita: true, despesa: true };
+  let hasBooted = false;
+
+  function receitaBRL(periodo = periodoAtual) {
+    const d = DATASETS[periodo];
+    if (!d) return 0;
+    return d.receita.reduce((s, v) => s + v, 0) * 1000;
+  }
+  function despesaBRL(periodo = periodoAtual) {
+    const d = DATASETS[periodo];
+    if (!d) return 0;
+    return d.despesa.reduce((s, v) => s + v, 0) * 1000;
+  }
 
   /* ===== MENU MOBILE ===== */
   const body = document.body;
@@ -238,10 +259,10 @@
   }
 
   const ACOES_AJUDA = {
-    docs:    'Abrindo documentação…',
+    docs: 'Abrindo documentação…',
     suporte: 'Conectando com o suporte…',
     atalhos: 'Atalhos: Ctrl+K, Ctrl+/, Shift+?',
-    sobre:   'Painel v1.0 · build 2026.10',
+    sobre: 'Painel v1.0 · build 2026.10',
   };
 
   $$('.pop-item[data-action]').forEach(item => {
@@ -252,38 +273,19 @@
     });
   });
 
-  /* ===== ANIMAÇÃO DE NÚMEROS ===== */
-  function animateNumber(el, to, { duration = 700, decimals = 0 } = {}) {
+  /* ===== ANIMAÇÃO DE MOEDA ===== */
+  function animateMoney(el, toBRL, duration = 700) {
     const from = parseFloat(el.dataset.current || 0);
     const start = performance.now();
     const ease = t => 1 - Math.pow(1 - t, 3);
     const frame = (now) => {
       const t = Math.min(1, (now - start) / duration);
-      const v = from + (to - from) * ease(t);
-      el.textContent = decimals
-        ? v.toFixed(decimals).replace('.', ',')
-        : Math.round(v).toString();
-      if (t < 1) requestAnimationFrame(frame);
-      else {
-        el.textContent = decimals ? to.toFixed(decimals).replace('.', ',') : Math.round(to).toString();
-        el.dataset.current = to;
-      }
-    };
-    requestAnimationFrame(frame);
-  }
-
-  function animateMoney(el, to, duration = 700) {
-    const from = parseFloat(el.dataset.current || 0);
-    const start = performance.now();
-    const ease = t => 1 - Math.pow(1 - t, 3);
-    const frame = (now) => {
-      const t = Math.min(1, (now - start) / duration);
-      const v = from + (to - from) * ease(t);
+      const v = from + (toBRL - from) * ease(t);
       el.textContent = formatMoney(v);
       if (t < 1) requestAnimationFrame(frame);
       else {
-        el.textContent = formatMoney(to);
-        el.dataset.current = to;
+        el.textContent = formatMoney(toBRL);
+        el.dataset.current = toBRL;
       }
     };
     requestAnimationFrame(frame);
@@ -340,8 +342,7 @@
       svg.appendChild(defs);
 
       const grid = svgEl('g', {
-        stroke: 'var(--chart-grid)',
-        'stroke-width': '1',
+        stroke: 'var(--chart-grid)', 'stroke-width': '1',
         'vector-effect': 'non-scaling-stroke',
       });
       for (let i = 0; i <= 4; i++) {
@@ -366,12 +367,8 @@
         { key: 'receita', color: 'var(--chart-2)', pts: ptsR },
       ].forEach(({ key, color, pts }) => {
         const line = svgEl('path', {
-          d: smoothPath(pts),
-          fill: 'none',
-          stroke: color,
-          'stroke-width': '2',
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
+          d: smoothPath(pts), fill: 'none', stroke: color,
+          'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
           'vector-effect': 'non-scaling-stroke',
           class: `serie serie--${key}` + (visivel[key] ? '' : ' is-hidden'),
         });
@@ -386,7 +383,7 @@
         const dot = document.createElement('span');
         dot.className = 'chart-dot';
         dot.style.left = p[0] + '%';
-        dot.style.top  = p[1] + '%';
+        dot.style.top = p[1] + '%';
         dot.style.transitionDelay = (0.6 + i * 0.02) + 's';
         points.appendChild(dot);
       });
@@ -406,7 +403,6 @@
       });
       wrap.appendChild(labelsEl);
 
-      // hover / tooltip
       const hoverLayer = document.createElement('div');
       hoverLayer.className = 'chart-hover';
       const cursor = document.createElement('div');
@@ -431,7 +427,6 @@
 
         const pR = chartData.ptsR[idx];
         const pD = chartData.ptsD[idx];
-
         cursor.style.left = pR[0] + '%';
 
         const label = chartData.labels[idx];
@@ -450,14 +445,13 @@
           </div>
         `;
 
-        // posiciona acima do ponto mais alto
         const topY = Math.min(pR[1], pD[1]);
         const padTopPercent = (padT / rect.height) * 100;
         const plotHeightPercent = 100 - padTopPercent - (padB / rect.height) * 100;
         const topPos = padTopPercent + (topY / 100) * plotHeightPercent;
 
         tooltip.style.left = pR[0] + '%';
-        tooltip.style.top  = topPos + '%';
+        tooltip.style.top = topPos + '%';
         tooltip.classList.add('is-visible');
         hoverLayer.classList.add('is-active');
       });
@@ -514,45 +508,45 @@
     const d = DATASETS[periodo];
     if (!d) return;
 
-    const receitaTotal = d.receita.reduce((s, v) => s + v, 0) * 1000;
-    const despesaTotal = d.despesa.reduce((s, v) => s + v, 0) * 1000;
-
     const rEl = $('#cardReceita .num');
     const dEl = $('#cardDespesa .num');
     const rBadge = $('#cardReceita .card-badge');
     const dBadge = $('#cardDespesa .card-badge');
 
-    if (rEl) animateMoney(rEl, receitaTotal);
-    if (dEl) animateMoney(dEl, despesaTotal);
+    if (rEl) animateMoney(rEl, receitaBRL(periodo));
+    if (dEl) animateMoney(dEl, despesaBRL(periodo));
     if (rBadge) atualizarBadge(rBadge, d.variacaoReceita, false);
     if (dBadge) atualizarBadge(dBadge, d.variacaoDespesa, true);
   }
 
   /* ===== DONUT INTERATIVO ===== */
-  const Donut = (id, data) => {
+  const Donut = (id, data, options = {}) => {
     const host = document.getElementById(id);
     if (!host) return;
+
+    const totalBRL = options.totalBRL || 0;
 
     const size = 140, stroke = 18;
     const r = (size - stroke) / 2;
     const cx = size / 2, cy = size / 2;
     const circ = 2 * Math.PI * r;
-    const total = data.reduce((s, d) => s + d.value, 0) || 1;
+    const totalPct = data.reduce((s, d) => s + d.value, 0) || 1;
 
     const svg = svgEl('svg', { viewBox: `0 0 ${size} ${size}` });
-    svg.style.opacity = '0';
-    svg.style.transform = 'scale(.85)';
-    svg.style.transformOrigin = 'center';
 
     svg.appendChild(svgEl('circle', {
       cx, cy, r, fill: 'none',
       stroke: 'var(--bg-3)', 'stroke-width': stroke,
     }));
 
+    const groups = [];
     let acc = 0;
-    const slices = [];
-    data.forEach(d => {
-      const len = (d.value / total) * circ;
+
+    data.forEach((d, i) => {
+      const len = (d.value / totalPct) * circ;
+      const midAngle = (-90 + ((acc + len / 2) / circ) * 360) * Math.PI / 180;
+
+      const g = svgEl('g', { class: 'donut-slice-group' });
       const slice = svgEl('circle', {
         cx, cy, r, fill: 'none',
         stroke: `var(${d.color})`,
@@ -562,72 +556,88 @@
         transform: `rotate(-90 ${cx} ${cy})`,
         class: 'donut-slice',
       });
-      slice.dataset.label = d.label;
-      slice.dataset.value = d.value;
-      slice.dataset.pct = Math.round((d.value / total) * 100);
-      svg.appendChild(slice);
-      slices.push(slice);
+      g.appendChild(slice);
+      svg.appendChild(g);
+
+      const actualBRL = (d.value / totalPct) * totalBRL;
+      groups.push({
+        g, slice, midAngle, actualBRL,
+        pct: Math.round((d.value / totalPct) * 100),
+        label: d.label,
+      });
+
       acc += len;
     });
 
-    // texto central — 2 linhas (label em cima, valor embaixo)
-    const labelEl = svgEl('text', {
-      x: cx, y: cy - 2,
-      class: 'donut-center-label',
-    });
+    const labelEl = svgEl('text', { x: cx, y: cy - 3, class: 'donut-center-label' });
     labelEl.textContent = 'Total';
     svg.appendChild(labelEl);
 
-    const valueEl = svgEl('text', {
-      x: cx, y: cy + 16,
-      class: 'donut-center-value',
-    });
-    valueEl.textContent = total;
+    const valueEl = svgEl('text', { x: cx, y: cy + 15, class: 'donut-center-value' });
+    valueEl.textContent = formatMoney(totalBRL);
     svg.appendChild(valueEl);
 
     host.innerHTML = '';
     host.appendChild(svg);
 
-    // interações
-    slices.forEach(slice => {
-      slice.addEventListener('mouseenter', () => {
-        slice.setAttribute('stroke-width', String(stroke + 4));
-        labelEl.textContent = slice.dataset.label;
-        valueEl.textContent = slice.dataset.pct + '%';
+    let activeIdx = -1;
+
+    function activate(i) {
+      activeIdx = i;
+
+      groups.forEach((grp, idx) => {
+        const isActive = idx === i;
+        const dimmed = i !== -1 && !isActive;
+
+        if (isActive) {
+          const dx = Math.cos(grp.midAngle) * 9;
+          const dy = Math.sin(grp.midAngle) * 9;
+          grp.g.style.transform = `translate(${dx}px, ${dy}px)`;
+          grp.g.style.opacity = '1';
+          grp.slice.setAttribute('stroke-width', String(stroke + 2));
+        } else {
+          grp.g.style.transform = 'translate(0, 0)';
+          grp.g.style.opacity = dimmed ? '0.35' : '1';
+          grp.slice.setAttribute('stroke-width', String(stroke));
+        }
       });
-      slice.addEventListener('mouseleave', () => {
-        slice.setAttribute('stroke-width', String(stroke));
+
+      if (i === -1) {
         labelEl.textContent = 'Total';
-        valueEl.textContent = total;
+        valueEl.textContent = formatMoney(totalBRL);
+        valueEl.style.fontSize = '14px';
+      } else {
+        labelEl.textContent = groups[i].label;
+        valueEl.textContent = formatMoney(groups[i].actualBRL);
+      }
+    }
+
+    groups.forEach((grp, i) => {
+      grp.g.addEventListener('click', (e) => {
+        e.stopPropagation();
+        activate(activeIdx === i ? -1 : i);
+      });
+      grp.g.addEventListener('mouseenter', () => {
+        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke + 2));
+      });
+      grp.g.addEventListener('mouseleave', () => {
+        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke));
       });
     });
 
-    // legenda interativa
     const legend = document.createElement('div');
     legend.className = 'donut-legend';
-    data.forEach((d, i) => {
-      const pct = Math.round((d.value / total) * 100);
+    groups.forEach((grp, i) => {
       const item = document.createElement('span');
-      item.innerHTML = `<i style="background:var(${d.color})"></i>${d.label}<b>${pct}%</b>`;
-      item.addEventListener('mouseenter', () => {
-        slices[i].setAttribute('stroke-width', String(stroke + 4));
-        labelEl.textContent = d.label;
-        valueEl.textContent = pct + '%';
-      });
-      item.addEventListener('mouseleave', () => {
-        slices[i].setAttribute('stroke-width', String(stroke));
-        labelEl.textContent = 'Total';
-        valueEl.textContent = total;
-      });
+      item.innerHTML = `<i style="background:var(${data[i].color})"></i>${grp.label}<b>${grp.pct}%</b>`;
+      item.addEventListener('click', () => activate(activeIdx === i ? -1 : i));
+      item.addEventListener('mouseenter', () => item.classList.toggle('is-active', activeIdx === i));
       legend.appendChild(item);
     });
     host.appendChild(legend);
 
-    requestAnimationFrame(() => {
-      svg.style.transition = 'transform .5s cubic-bezier(.16,1,.3,1), opacity .4s ease';
-      svg.style.transform = 'scale(1)';
-      svg.style.opacity = '1';
-    });
+    // guarda referência pra resetar quando trocar período
+    host._donutReset = () => activate(-1);
   };
 
   /* ===== BARRAS ===== */
@@ -685,10 +695,8 @@
     });
 
     const labelG = svgEl('g', {
-      fill: 'var(--chart-label)',
-      'font-size': '10',
-      'font-family': 'JetBrains Mono, monospace',
-      'text-anchor': 'middle',
+      fill: 'var(--chart-label)', 'font-size': '10',
+      'font-family': 'JetBrains Mono, monospace', 'text-anchor': 'middle',
     });
     data.forEach((d, i) => {
       if (data.length > 8 && i % 2 !== 0) return;
@@ -758,6 +766,85 @@
     });
   };
 
+  /* ===== META DE RECEITA ===== */
+  function getGoalRefs() {
+    return {
+      input: $('#goalInput'),
+      symbol: $('#goalCurrencySymbol'),
+      progress: $('#goalProgress'),
+      fill: $('#goalProgressFill'),
+      percent: $('#goalPercent'),
+      remaining: $('#goalRemaining'),
+    };
+  }
+
+  function updateGoalUI() {
+    const { input, symbol, progress, fill, percent, remaining } = getGoalRefs();
+    if (!input) return;
+
+    const currency = currentCurrency();
+    const goalBRL = window.Settings?.get?.('goalBRL') || 0;
+
+    if (symbol) symbol.textContent = CURRENCY_SYMBOL[currency] || 'R$';
+
+    // valor no input (só atualiza se não está sendo editado)
+    if (document.activeElement !== input) {
+      const locale = CURRENCY_LOCALE[currency] || 'pt-BR';
+      const displayValue = convertFromBRL(goalBRL, currency);
+      input.value = goalBRL > 0
+        ? new Intl.NumberFormat(locale).format(Math.round(displayValue))
+        : '';
+    }
+
+    if (!progress) return;
+    if (goalBRL <= 0) {
+      progress.hidden = true;
+      return;
+    }
+    progress.hidden = false;
+
+    const revenue = receitaBRL();
+    const pct = Math.min(100, (revenue / goalBRL) * 100);
+    const remainingBRL = Math.max(0, goalBRL - revenue);
+    const complete = pct >= 100;
+
+    if (fill) {
+      fill.style.width = pct + '%';
+      fill.classList.toggle('is-complete', complete);
+    }
+    if (percent) {
+      percent.textContent = Math.round(pct) + '%';
+      percent.classList.toggle('is-complete', complete);
+    }
+    if (remaining) {
+      remaining.textContent = complete
+        ? 'Meta atingida!'
+        : `Faltam ${formatMoney(remainingBRL)}`;
+    }
+  }
+
+  // input da meta
+  const goalInput = $('#goalInput');
+  if (goalInput) {
+    goalInput.addEventListener('input', () => {
+      const digits = goalInput.value.replace(/\D/g, '');
+      if (digits !== goalInput.value) goalInput.value = digits;
+      const num = parseInt(digits, 10) || 0;
+      const currency = currentCurrency();
+      const rate = EXCHANGE[currency] || 1;
+      const goalBRL = rate > 0 ? num / rate : 0;
+      window.Settings?.set?.('goalBRL', goalBRL);
+    });
+
+    goalInput.addEventListener('focus', () => {
+      goalInput.value = goalInput.value.replace(/\D/g, '');
+    });
+
+    goalInput.addEventListener('blur', () => {
+      updateGoalUI();
+    });
+  }
+
   /* ===== RENDER GERAL ===== */
   function renderAll(periodo) {
     periodoAtual = periodo || periodoAtual;
@@ -766,11 +853,15 @@
 
     Chart.render();
     atualizarCards(periodoAtual);
-    Donut('donutCategorias', d.categorias);
-    Donut('donutOrigem', d.origem);
+
+    Donut('donutCategorias', d.categorias, { totalBRL: despesaBRL() });
+    Donut('donutOrigem', d.origem, { totalBRL: receitaBRL() });
+
     Bars('barPeriodo', d.barras);
     TopList('topProdutos', d.topProdutos);
     StockList('estoqueCritico', ESTOQUE);
+
+    updateGoalUI();
   }
 
   /* ===== CHIPS DE PERÍODO ===== */
@@ -792,10 +883,7 @@
     document.body.classList.toggle('presentation-mode', on);
     const exit = $('#presentationExit');
     if (exit) exit.hidden = !on;
-    if (on) {
-      // fecha painel de configs se estiver aberto
-      window.Settings?.close?.();
-    }
+    if (on) window.Settings?.close?.();
   }
 
   $('#presentationExit')?.addEventListener('click', () => {
@@ -812,21 +900,17 @@
 
   /* ===== BUSCA ===== */
   const SEARCH_TARGETS = [
-    { id: 'contentHeader',   label: 'Visão Geral',            keywords: ['visão', 'geral', 'resumo', 'home'] },
-    { id: 'cardReceita',     label: 'Receita do período',     keywords: ['receita', 'entrada', 'ganho'] },
-    { id: 'cardDespesa',     label: 'Despesa do período',     keywords: ['despesa', 'gasto', 'saída'] },
-    { id: 'panelGrafico',    label: 'Receita × Despesa',      keywords: ['gráfico', 'comparativo', 'linha'] },
-    { id: 'panelCategorias', label: 'Gastos por categoria',   keywords: ['categoria', 'gastos', 'marketing', 'salários', 'operacional', 'infraestrutura'] },
-    { id: 'panelOrigem',     label: 'Origem da receita',      keywords: ['origem', 'recorrente', 'novos'] },
-    { id: 'panelBarras',     label: 'Receita no período',     keywords: ['barras', 'receita'] },
-    { id: 'panelEstoque',    label: 'Estoque crítico',        keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
-    { id: 'panelTop',        label: 'Top produtos',           keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
-    // produtos individuais
+    { id: 'contentHeader',   label: 'Visão Geral',          keywords: ['visão', 'geral', 'resumo', 'home'] },
+    { id: 'cardReceita',     label: 'Receita do período',   keywords: ['receita', 'entrada', 'ganho'] },
+    { id: 'cardDespesa',     label: 'Despesa do período',   keywords: ['despesa', 'gasto', 'saída'] },
+    { id: 'panelGrafico',    label: 'Receita × Despesa',    keywords: ['gráfico', 'comparativo', 'linha'] },
+    { id: 'panelCategorias', label: 'Gastos por categoria', keywords: ['categoria', 'gastos', 'marketing', 'salários', 'operacional', 'infraestrutura'] },
+    { id: 'panelOrigem',     label: 'Origem da receita',    keywords: ['origem', 'recorrente', 'novos'] },
+    { id: 'panelBarras',     label: 'Receita no período',   keywords: ['barras', 'receita'] },
+    { id: 'panelEstoque',    label: 'Estoque crítico',      keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
+    { id: 'panelTop',        label: 'Top produtos',         keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
     ...['Notebook Pro 15', 'Monitor 27"', 'Teclado Mec.', 'Headset BT', 'Mouse Ergo'].map(name => ({
-      id: 'panelTop',
-      label: name,
-      keywords: [name.toLowerCase()],
-      child: name,
+      id: 'panelTop', label: name, keywords: [name.toLowerCase()], child: name,
     })),
   ];
 
@@ -837,7 +921,6 @@
   function normalizar(s) {
     return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
-
   function buscar(termo) {
     const q = normalizar(termo.trim());
     if (!q) return [];
@@ -851,18 +934,15 @@
   function mostrarResultados(lista) {
     searchResults.innerHTML = '';
     activeResultIdx = -1;
-
     if (!lista.length) {
       searchResults.innerHTML = '<div class="search-empty">Nada encontrado</div>';
       searchResults.classList.add('is-open');
       return;
     }
-
-    lista.forEach((t, i) => {
+    lista.forEach(t => {
       const btn = document.createElement('button');
       btn.className = 'search-result';
       btn.dataset.targetId = t.id;
-      btn.dataset.child = t.child || '';
       btn.innerHTML = `
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
              stroke="currentColor" stroke-width="2"
@@ -885,16 +965,13 @@
   function irPara(t) {
     const target = document.getElementById(t.id);
     if (!target) return;
-
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
     setTimeout(() => {
       target.classList.remove('is-highlighted');
       void target.offsetWidth;
       target.classList.add('is-highlighted');
       setTimeout(() => target.classList.remove('is-highlighted'), 2100);
     }, 420);
-
     fecharResultados();
     searchInput.value = '';
     searchInput.blur();
@@ -902,15 +979,12 @@
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
-      const lista = buscar(searchInput.value);
       if (!searchInput.value.trim()) return fecharResultados();
-      mostrarResultados(lista);
+      mostrarResultados(buscar(searchInput.value));
     });
-
     searchInput.addEventListener('keydown', e => {
       const items = $$('.search-result');
       if (!items.length) return;
-
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         activeResultIdx = (activeResultIdx + 1) % items.length;
@@ -921,21 +995,16 @@
         items.forEach((it, i) => it.classList.toggle('is-active', i === activeResultIdx));
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        const idx = activeResultIdx >= 0 ? activeResultIdx : 0;
-        items[idx]?.click();
+        items[activeResultIdx >= 0 ? activeResultIdx : 0]?.click();
       } else if (e.key === 'Escape') {
         fecharResultados();
         searchInput.blur();
       }
     });
-
     searchInput.addEventListener('focus', () => {
-      if (searchInput.value.trim()) {
-        mostrarResultados(buscar(searchInput.value));
-      }
+      if (searchInput.value.trim()) mostrarResultados(buscar(searchInput.value));
     });
   }
-
   document.addEventListener('click', e => {
     if (!e.target.closest('.search')) fecharResultados();
   });
@@ -953,19 +1022,36 @@
     setInterval(tick, 30_000);
   };
 
-  /* ===== REAGE A MUDANÇAS DE PREFERÊNCIAS ===== */
-  document.addEventListener('settings:change', () => {
-    // re-renderiza com novo formato de moeda / casas decimais
-    renderAll(periodoAtual);
-    setPresentation(window.Settings?.get?.('presentation'));
+  /* ===== REAGE A MUDANÇAS ===== */
+  let snap = { currency: null, period: null };
+
+  document.addEventListener('settings:change', (e) => {
+    if (!hasBooted) return;
+    const s = e.detail;
+    const currChanged = snap.currency !== s.currency;
+    const perChanged = snap.period !== s.defaultPeriod;
+    snap.currency = s.currency;
+    snap.period = s.defaultPeriod;
+
+    if (perChanged) setPeriodo(s.defaultPeriod);
+    else if (currChanged) renderAll(periodoAtual);
+
+    updateGoalUI();
+    setPresentation(s.presentation);
   });
 
   /* ===== BOOT ===== */
   const boot = () => {
+    hasBooted = true;
     startClock();
-    const defaultPeriod = window.Settings?.get?.('defaultPeriod') || '1a';
-    setPeriodo(defaultPeriod);
-    setPresentation(window.Settings?.get?.('presentation'));
+
+    const s = window.Settings?.get?.() || {};
+    snap.currency = s.currency || 'BRL';
+    snap.period = s.defaultPeriod || '1a';
+
+    setPeriodo(snap.period);
+    setPresentation(s.presentation);
+    updateGoalUI();
   };
 
   if (document.readyState === 'loading') {
@@ -977,8 +1063,8 @@
   window.Dash = {
     renderAll,
     setPeriodo,
-    animateNumber,
     formatMoney,
     setPresentation,
+    updateGoalUI,
   };
 })();

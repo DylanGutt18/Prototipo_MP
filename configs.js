@@ -11,10 +11,10 @@
   const DEFAULTS = {
     theme: 'violeta',
     currency: 'BRL',
-    decimals: 0,
     defaultPeriod: '1a',
     presentation: false,
     'hide-values': false,
+    goalBRL: 0,
   };
 
   let state = load();
@@ -32,10 +32,10 @@
   /* ===== APLICAÇÃO ===== */
   function apply() {
     const html = document.documentElement;
-    html.dataset.theme       = state.theme;
-    html.dataset.hideValues  = String(state['hide-values']);
+    html.dataset.theme      = state.theme;
+    html.dataset.hideValues = String(state['hide-values']);
     syncUI();
-    document.dispatchEvent(new CustomEvent('settings:change', { detail: state }));
+    document.dispatchEvent(new CustomEvent('settings:change', { detail: { ...state } }));
   }
 
   function syncUI() {
@@ -47,9 +47,6 @@
     });
     $$('.segmented [data-currency]').forEach(b => {
       b.setAttribute('aria-checked', String(b.dataset.currency === state.currency));
-    });
-    $$('.segmented [data-decimals]').forEach(b => {
-      b.setAttribute('aria-checked', String(+b.dataset.decimals === +state.decimals));
     });
     $$('.segmented [data-period]').forEach(b => {
       b.setAttribute('aria-checked', String(b.dataset.period === state.defaultPeriod));
@@ -106,12 +103,6 @@
     const currencyBtn = e.target.closest('[data-currency]');
     if (currencyBtn) {
       state.currency = currencyBtn.dataset.currency;
-      save(); apply();
-      return;
-    }
-    const decBtn = e.target.closest('[data-decimals]');
-    if (decBtn) {
-      state.decimals = +decBtn.dataset.decimals;
       save(); apply();
       return;
     }

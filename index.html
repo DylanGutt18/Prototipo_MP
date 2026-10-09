@@ -13,7 +13,6 @@
 </head>
 <body>
 
-  <!-- TRILHA ESQUERDA -->
   <aside class="rail" id="rail">
     <button class="rail-avatar" id="perfilBtn" aria-label="Perfil" aria-expanded="false" aria-controls="popPerfil">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -39,7 +38,6 @@
     </div>
   </aside>
 
-  <!-- MENU -->
   <nav class="menu" id="menu" aria-label="Seções">
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -73,7 +71,6 @@
     </a>
   </nav>
 
-  <!-- BARRA SUPERIOR -->
   <header class="tools">
     <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
@@ -98,28 +95,26 @@
     </div>
   </header>
 
-  <!-- OVERLAY MOBILE -->
   <div class="overlay" id="overlay"></div>
 
-  <!-- CONTEÚDO -->
   <main class="content">
 
     <div class="content-header">
       <div>
         <h1>Visão Geral</h1>
-        <p class="subtitle">Resumo financeiro · últimos 30 dias</p>
+        <p class="subtitle">Resumo financeiro · período selecionado</p>
       </div>
-      <div class="range-picker">
-        <button class="chip active">30d</button>
-        <button class="chip">90d</button>
-        <button class="chip">1a</button>
+      <div class="range-picker" role="group" aria-label="Período">
+        <button class="chip" data-period="30d">30d</button>
+        <button class="chip" data-period="90d">90d</button>
+        <button class="chip active" data-period="1a">1a</button>
       </div>
     </div>
 
     <section class="metrics">
       <article class="card">
         <header>
-          <span class="card-label">Receita mensal</span>
+          <span class="card-label">Receita do período</span>
           <span class="card-badge down">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
             12,4%
@@ -127,14 +122,14 @@
         </header>
         <div class="card-value">
           <small>R$</small>
-          <span class="num" data-count="52">0</span><small>mil</small>
+          <span class="num" data-count="413">0</span><small>mil</small>
         </div>
-        <footer>vs. mês anterior</footer>
+        <footer>no período selecionado</footer>
       </article>
 
       <article class="card">
         <header>
-          <span class="card-label">Despesas mensais</span>
+          <span class="card-label">Despesa do período</span>
           <span class="card-badge up">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             3,8%
@@ -142,9 +137,9 @@
         </header>
         <div class="card-value">
           <small>R$</small>
-          <span class="num" data-count="36">0</span><small>mil</small>
+          <span class="num" data-count="297">0</span><small>mil</small>
         </div>
-        <footer>vs. mês anterior</footer>
+        <footer>no período selecionado</footer>
       </article>
     </section>
 
@@ -152,7 +147,7 @@
       <header class="panel-head">
         <div>
           <h3>Receita × Despesa</h3>
-          <p class="panel-sub">Comparativo mensal · valores em milhares</p>
+          <p class="panel-sub">Comparativo do período · valores em milhares</p>
         </div>
         <div class="legend">
           <span><i class="dot" style="background:var(--chart-2)"></i>Receita</span>
@@ -196,7 +191,6 @@
 
   </main>
 
-  <!-- NAV INFERIOR (mobile) -->
   <nav class="bottom-nav" aria-label="Navegação rápida">
     <a href="#" class="active">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
@@ -220,7 +214,6 @@
     </a>
   </nav>
 
-  <!-- POPOVER · PERFIL -->
   <div class="popover popover--perfil" id="popPerfil" role="dialog" aria-hidden="true">
     <div class="pop-head">
       <div class="pop-avatar">AC</div>
@@ -229,7 +222,6 @@
         <span>contato@acme.com</span>
       </div>
     </div>
-
     <div class="pop-section">
       <span class="pop-section-label">Dados da empresa</span>
       <dl class="pop-dl">
@@ -238,7 +230,6 @@
         <div><dt>Setor</dt><dd>Tecnologia</dd></div>
       </dl>
     </div>
-
     <div class="pop-section">
       <span class="pop-section-label">Resumo</span>
       <dl class="pop-dl">
@@ -249,7 +240,6 @@
     </div>
   </div>
 
-    <!-- POPOVER · AJUDA -->
   <div class="popover popover--ajuda" id="popAjuda" role="dialog" aria-hidden="true">
     <div class="pop-head">
       <div class="pop-avatar">
@@ -264,49 +254,34 @@
         <span>Recursos e suporte</span>
       </div>
     </div>
-
     <ul class="pop-list">
       <li>
         <button class="pop-item" data-action="docs">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           Documentação
         </button>
       </li>
       <li>
         <button class="pop-item" data-action="suporte">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Falar com suporte
         </button>
       </li>
       <li>
         <button class="pop-item" data-action="atalhos">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="12" rx="2"/>
-            <line x1="8" y1="20" x2="16" y2="20"/>
-            <line x1="12" y1="16" x2="12" y2="20"/>
-          </svg>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
           Atalhos de teclado
         </button>
       </li>
       <li>
         <button class="pop-item" data-action="sobre">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <line x1="12" y1="16" x2="12" y2="12"/>
-            <circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/>
-          </svg>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
           Sobre o painel
         </button>
       </li>
     </ul>
   </div>
 
-  <!-- PAINEL DE CONFIGURAÇÕES -->
   <div class="settings-overlay" id="settingsOverlay" aria-hidden="true"></div>
 
   <aside class="settings" id="settings" role="dialog" aria-modal="true"
@@ -330,7 +305,7 @@
       <section class="settings-section">
         <div class="section-head">
           <span class="section-label">Aparência</span>
-          <span class="section-hint">5 temas</span>
+          <span class="section-hint">6 temas</span>
         </div>
 
         <div class="theme-grid" role="radiogroup" aria-label="Tema">
@@ -340,9 +315,7 @@
               <span class="tp-rail"></span><span class="tp-menu"></span>
               <span class="tp-body">
                 <span class="tp-cards"><span class="tp-card"></span><span class="tp-card"></span></span>
-                <span class="tp-chart">
-                  <svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg>
-                </span>
+                <span class="tp-chart"><svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg></span>
               </span>
             </div>
             <span class="theme-name">Violeta</span>
@@ -354,9 +327,7 @@
               <span class="tp-rail"></span><span class="tp-menu"></span>
               <span class="tp-body">
                 <span class="tp-cards"><span class="tp-card"></span><span class="tp-card"></span></span>
-                <span class="tp-chart">
-                  <svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg>
-                </span>
+                <span class="tp-chart"><svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg></span>
               </span>
             </div>
             <span class="theme-name">Claro</span>
@@ -368,9 +339,7 @@
               <span class="tp-rail"></span><span class="tp-menu"></span>
               <span class="tp-body">
                 <span class="tp-cards"><span class="tp-card"></span><span class="tp-card"></span></span>
-                <span class="tp-chart">
-                  <svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg>
-                </span>
+                <span class="tp-chart"><svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg></span>
               </span>
             </div>
             <span class="theme-name">Quente</span>
@@ -382,9 +351,7 @@
               <span class="tp-rail"></span><span class="tp-menu"></span>
               <span class="tp-body">
                 <span class="tp-cards"><span class="tp-card"></span><span class="tp-card"></span></span>
-                <span class="tp-chart">
-                  <svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg>
-                </span>
+                <span class="tp-chart"><svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg></span>
               </span>
             </div>
             <span class="theme-name">Azul</span>
@@ -396,12 +363,22 @@
               <span class="tp-rail"></span><span class="tp-menu"></span>
               <span class="tp-body">
                 <span class="tp-cards"><span class="tp-card"></span><span class="tp-card"></span></span>
-                <span class="tp-chart">
-                  <svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg>
-                </span>
+                <span class="tp-chart"><svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg></span>
               </span>
             </div>
             <span class="theme-name">Verde</span>
+            <span class="theme-check"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 7"/></svg></span>
+          </button>
+
+          <button class="theme-card" role="radio" aria-checked="false" data-theme-value="rosa">
+            <div class="theme-preview" data-theme="rosa" aria-hidden="true">
+              <span class="tp-rail"></span><span class="tp-menu"></span>
+              <span class="tp-body">
+                <span class="tp-cards"><span class="tp-card"></span><span class="tp-card"></span></span>
+                <span class="tp-chart"><svg viewBox="0 0 60 16" preserveAspectRatio="none"><path d="M0 12 Q 12 6, 24 10 T 48 5 T 60 8" fill="none" stroke="var(--accent)" stroke-width="1.4"/></svg></span>
+              </span>
+            </div>
+            <span class="theme-name">Rosa</span>
             <span class="theme-check"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 7"/></svg></span>
           </button>
 

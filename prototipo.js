@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · count-up · gráficos · relógio · popovers
+   prototipo.js — menu · count-up · gráficos · relógio · popovers · períodos
    ========================================================================== */
 (() => {
   'use strict';
@@ -12,6 +12,25 @@
     const el = document.createElementNS(NS, tag);
     for (const k in attrs) el.setAttribute(k, attrs[k]);
     return el;
+  };
+
+  /* ===== DATASETS POR PERÍODO ===== */
+  const DATASETS = {
+    '30d': {
+      labels: Array.from({ length: 30 }, (_, i) => String(i + 1)),
+      receita: [1.2,1.4,1.1,1.6,1.5,1.8,1.7,1.9,2.0,1.7,2.1,1.9,2.2,2.0,1.8,2.3,2.1,2.4,2.2,2.0,2.5,2.3,2.4,2.2,2.6,2.5,2.3,2.7,2.6,2.8],
+      despesa: [0.9,1.0,0.8,1.2,1.1,1.3,1.2,1.4,1.5,1.2,1.6,1.4,1.6,1.5,1.3,1.7,1.5,1.8,1.6,1.5,1.9,1.7,1.8,1.6,2.0,1.9,1.7,2.1,2.0,2.2],
+    },
+    '90d': {
+      labels: ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12'],
+      receita: [8, 9, 11, 10, 12, 14, 13, 15, 16, 14, 17, 18],
+      despesa: [6, 7, 8, 7, 9, 10, 9, 11, 12, 11, 13, 14],
+    },
+    '1a': {
+      labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+      receita: [18, 22, 20, 28, 32, 30, 36, 42, 40, 48, 45, 52],
+      despesa: [14, 16, 15, 20, 22, 24, 26, 28, 30, 32, 34, 36],
+    },
   };
 
   /* ===== MENU MOBILE ===== */
@@ -44,7 +63,7 @@
     if (e.matches) setMenu(false);
   });
 
-  /* ===== POPOVERS (perfil · ajuda) ===== */
+  /* ===== POPOVERS ===== */
   const perfilBtn = $('#perfilBtn');
   const perfilPop = $('#popPerfil');
   const ajudaBtn  = $('#ajudaBtn');
@@ -68,24 +87,18 @@
     btn.setAttribute('aria-expanded', 'true');
   }
 
-  perfilBtn?.addEventListener('click', (e) => {
+  perfilBtn?.addEventListener('click', e => {
     e.stopPropagation();
-    if (perfilPop.classList.contains('is-open')) fecharTodos();
-    else abrir(perfilPop, perfilBtn);
+    perfilPop.classList.contains('is-open') ? fecharTodos() : abrir(perfilPop, perfilBtn);
   });
-
-  ajudaBtn?.addEventListener('click', (e) => {
+  ajudaBtn?.addEventListener('click', e => {
     e.stopPropagation();
-    if (ajudaPop.classList.contains('is-open')) fecharTodos();
-    else abrir(ajudaPop, ajudaBtn);
+    ajudaPop.classList.contains('is-open') ? fecharTodos() : abrir(ajudaPop, ajudaBtn);
   });
-
   perfilPop?.addEventListener('click', e => e.stopPropagation());
   ajudaPop?.addEventListener('click', e => e.stopPropagation());
-
   document.addEventListener('click', fecharTodos);
 
-  document.addEventListener('click', () => pops.forEach(p => p.close()));
   /* ===== TOAST ===== */
   const toastHost = document.createElement('div');
   toastHost.className = 'toast-host';
@@ -105,14 +118,12 @@
       <span>${msg}</span>
     `;
     toastHost.appendChild(t);
-
     setTimeout(() => {
       t.classList.add('is-leaving');
       t.addEventListener('animationend', () => t.remove());
     }, 2400);
   }
 
-  /* ===== AÇÕES DOS ITENS DE AJUDA ===== */
   const ACOES_AJUDA = {
     docs:    'Abrindo documentação…',
     suporte: 'Conectando com o suporte…',
@@ -121,39 +132,42 @@
   };
 
   document.querySelectorAll('.pop-item[data-action]').forEach(item => {
-    item.addEventListener('click', (e) => {
+    item.addEventListener('click', e => {
       e.stopPropagation();
-      const acao = item.dataset.action;
-      const msg = ACOES_AJUDA[acao] || `Ação: ${acao}`;
-      mostrarToast(msg);
+      mostrarToast(ACOES_AJUDA[item.dataset.action] || `Ação: ${item.dataset.action}`);
       fecharTodos();
     });
   });
+
   /* ===== COUNT-UP ===== */
-  const animateNumber = (el, to, { duration = 1100, decimals = 0 } = {}) => {
+  function animateNumber(el, to, { duration = 800, decimals = 0 } = {}) {
+    const from = parseFloat(
+      String(el.textContent).replace(/\./g, '').replace(',', '.')
+    ) || 0;
     const start = performance.now();
     const ease = t => 1 - Math.pow(1 - t, 3);
     const frame = (now) => {
       const t = Math.min(1, (now - start) / duration);
-      const v = to * ease(t);
+      const v = from + (to - from) * ease(t);
       el.textContent = decimals
         ? v.toFixed(decimals).replace('.', ',')
         : Math.round(v).toString();
       if (t < 1) requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
-  };
+  }
 
-  const runCounters = (root = document) => {
+  function runCounters(root = document) {
     $$('[data-count]', root).forEach(el => {
       const to = parseFloat(el.dataset.count);
       if (Number.isNaN(to)) return;
+      el.textContent = '0';
       animateNumber(el, to, {
         duration: 1000 + Math.random() * 250,
         decimals: el.dataset.decimals ? +el.dataset.decimals : 0,
       });
     });
-  };
+  }
 
   /* ===== CURVA SUAVE ===== */
   const smoothPath = (pts) => {
@@ -171,18 +185,17 @@
     return d;
   };
 
-  /* ===== LINHA — RECEITA × DESPESA ===== */
+  /* ===== GRÁFICO PRINCIPAL ===== */
   const Chart = (() => {
     const host = $('#chart');
-    if (!host) return { render() {} };
+    if (!host) return { render() {}, setPeriod() {} };
 
-    const receita = [18, 22, 20, 28, 32, 30, 36, 42, 40, 48, 45, 52];
-    const despesa = [14, 16, 15, 20, 22, 24, 26, 28, 30, 32, 34, 36];
-    const labels  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    let periodoAtual = '1a';
 
-    const build = () => {
+    const build = (data) => {
+      const { receita, despesa, labels } = data;
       const max = Math.max(...receita, ...despesa) * 1.12;
-      const n   = receita.length;
+      const n = receita.length;
 
       const xAt = i => (i / (n - 1)) * 100;
       const yAt = v => (1 - v / max) * 100;
@@ -247,16 +260,23 @@
         dot.className = 'chart-dot';
         dot.style.left = p[0] + '%';
         dot.style.top  = p[1] + '%';
-        dot.style.transitionDelay = (0.6 + i * 0.04) + 's';
+        dot.style.transitionDelay = (0.6 + i * 0.02) + 's';
         points.appendChild(dot);
       });
       wrap.appendChild(points);
 
       const labelsEl = document.createElement('div');
       labelsEl.className = 'chart-labels';
-      labels.forEach(lb => {
+
+      const mostrarTodas = labels.length <= 12;
+      const step = mostrarTodas ? 1 : Math.ceil(labels.length / 6);
+      const ultimo = labels.length - 1;
+
+      labels.forEach((lb, i) => {
+        if (!mostrarTodas && i % step !== 0 && i !== ultimo) return;
         const s = document.createElement('span');
         s.textContent = lb;
+        s.style.left = (i / ultimo) * 100 + '%';
         labelsEl.appendChild(s);
       });
       wrap.appendChild(labelsEl);
@@ -269,12 +289,45 @@
     };
 
     const render = () => {
+      const data = DATASETS[periodoAtual];
       host.innerHTML = '';
-      host.appendChild(build());
+      host.appendChild(build(data));
     };
 
-    return { render };
+    const setPeriod = (p) => {
+      if (!DATASETS[p]) return;
+      periodoAtual = p;
+      render();
+    };
+
+    return { render, setPeriod };
   })();
+
+  /* ===== ATUALIZA CARDS CONFORME PERÍODO ===== */
+  function atualizarCards(periodo) {
+    const data = DATASETS[periodo];
+    if (!data) return;
+
+    const receitaTotal = data.receita.reduce((s, v) => s + v, 0);
+    const despesaTotal = data.despesa.reduce((s, v) => s + v, 0);
+
+    const receitaEl = $('.metrics .card:nth-child(1) .num');
+    const despesaEl = $('.metrics .card:nth-child(2) .num');
+
+    if (receitaEl) animateNumber(receitaEl, Math.round(receitaTotal), { duration: 700 });
+    if (despesaEl) animateNumber(despesaEl, Math.round(despesaTotal), { duration: 700 });
+  }
+
+  /* ===== CHIPS DE PERÍODO ===== */
+  $$('.range-picker .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      $$('.range-picker .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const p = chip.dataset.period || '1a';
+      Chart.setPeriod(p);
+      atualizarCards(p);
+    });
+  });
 
   /* ===== DONUT ===== */
   const Donut = (id, data) => {
@@ -430,6 +483,7 @@
   /* ===== RENDER GERAL ===== */
   const renderAll = () => {
     Chart.render();
+    atualizarCards('1a');
     Donut('donutCategorias', [
       { label: 'Marketing',      value: 35, color: '--chart-1' },
       { label: 'Operacional',    value: 30, color: '--chart-2' },

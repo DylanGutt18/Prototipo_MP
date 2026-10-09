@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · count-up · gráficos · relógio · popovers · períodos
+   prototipo.js — menu · gráficos · período · popovers · toast
    ========================================================================== */
 (() => {
   'use strict';
@@ -18,20 +18,118 @@
   const DATASETS = {
     '30d': {
       labels: Array.from({ length: 30 }, (_, i) => String(i + 1)),
-      receita: [1.2,1.4,1.1,1.6,1.5,1.8,1.7,1.9,2.0,1.7,2.1,1.9,2.2,2.0,1.8,2.3,2.1,2.4,2.2,2.0,2.5,2.3,2.4,2.2,2.6,2.5,2.3,2.7,2.6,2.8],
-      despesa: [0.9,1.0,0.8,1.2,1.1,1.3,1.2,1.4,1.5,1.2,1.6,1.4,1.6,1.5,1.3,1.7,1.5,1.8,1.6,1.5,1.9,1.7,1.8,1.6,2.0,1.9,1.7,2.1,2.0,2.2],
+      receita: [0.9,1.1,0.8,1.3,1.2,1.5,1.4,1.6,1.8,1.5,1.9,1.7,2.0,1.8,1.6,2.1,1.9,2.2,2.0,1.8,2.3,2.1,2.2,2.0,2.4,2.3,2.1,2.5,2.4,2.6],
+      despesa: [0.7,0.8,0.6,0.9,0.8,1.0,0.9,1.1,1.2,1.0,1.3,1.1,1.4,1.2,1.1,1.4,1.3,1.5,1.4,1.2,1.5,1.4,1.5,1.3,1.6,1.5,1.4,1.6,1.5,1.7],
+      variacaoReceita: 6.2,
+      variacaoDespesa: 2.1,
+      categorias: [
+        { label: 'Marketing',      value: 32, color: '--chart-1' },
+        { label: 'Operacional',    value: 28, color: '--chart-2' },
+        { label: 'Salários',       value: 26, color: '--chart-3' },
+        { label: 'Infraestrutura', value: 14, color: '--chart-4' },
+      ],
+      origem: [
+        { label: 'Recorrente', value: 58, color: '--chart-2' },
+        { label: 'Novos',      value: 42, color: '--chart-1' },
+      ],
+      barras: [
+        { label: 'Seg', value: 4.5 },
+        { label: 'Ter', value: 5.2 },
+        { label: 'Qua', value: 4.8 },
+        { label: 'Qui', value: 5.5 },
+        { label: 'Sex', value: 6.2 },
+        { label: 'Sáb', value: 3.8 },
+        { label: 'Dom', value: 2.1 },
+      ],
+      topProdutos: [
+        { label: 'Notebook Pro 15', value: 12, display: 'R$ 12k' },
+        { label: 'Monitor 27"',     value: 9,  display: 'R$ 9k'  },
+        { label: 'Teclado Mec.',    value: 7,  display: 'R$ 7k'  },
+        { label: 'Headset BT',      value: 5,  display: 'R$ 5k'  },
+        { label: 'Mouse Ergo',      value: 3,  display: 'R$ 3k'  },
+      ],
     },
     '90d': {
       labels: ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12'],
       receita: [8, 9, 11, 10, 12, 14, 13, 15, 16, 14, 17, 18],
       despesa: [6, 7, 8, 7, 9, 10, 9, 11, 12, 11, 13, 14],
+      variacaoReceita: 14.8,
+      variacaoDespesa: -1.5,
+      categorias: [
+        { label: 'Marketing',      value: 28, color: '--chart-1' },
+        { label: 'Operacional',    value: 30, color: '--chart-2' },
+        { label: 'Salários',       value: 27, color: '--chart-3' },
+        { label: 'Infraestrutura', value: 15, color: '--chart-4' },
+      ],
+      origem: [
+        { label: 'Recorrente', value: 61, color: '--chart-2' },
+        { label: 'Novos',      value: 39, color: '--chart-1' },
+      ],
+      barras: [
+        { label: 'Out', value: 24 },
+        { label: 'Nov', value: 28 },
+        { label: 'Dez', value: 31 },
+        { label: 'Jan', value: 26 },
+        { label: 'Fev', value: 30 },
+        { label: 'Mar', value: 34 },
+        { label: 'Abr', value: 29 },
+        { label: 'Mai', value: 33 },
+        { label: 'Jun', value: 36 },
+        { label: 'Jul', value: 31 },
+        { label: 'Ago', value: 38 },
+        { label: 'Set', value: 41 },
+      ],
+      topProdutos: [
+        { label: 'Notebook Pro 15', value: 34, display: 'R$ 34k' },
+        { label: 'Monitor 27"',     value: 27, display: 'R$ 27k' },
+        { label: 'Teclado Mec.',    value: 21, display: 'R$ 21k' },
+        { label: 'Headset BT',      value: 15, display: 'R$ 15k' },
+        { label: 'Mouse Ergo',      value: 10, display: 'R$ 10k' },
+      ],
     },
     '1a': {
       labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
       receita: [18, 22, 20, 28, 32, 30, 36, 42, 40, 48, 45, 52],
       despesa: [14, 16, 15, 20, 22, 24, 26, 28, 30, 32, 34, 36],
+      variacaoReceita: 12.4,
+      variacaoDespesa: 3.8,
+      categorias: [
+        { label: 'Marketing',      value: 35, color: '--chart-1' },
+        { label: 'Operacional',    value: 30, color: '--chart-2' },
+        { label: 'Salários',       value: 20, color: '--chart-3' },
+        { label: 'Infraestrutura', value: 15, color: '--chart-4' },
+      ],
+      origem: [
+        { label: 'Recorrente', value: 64, color: '--chart-2' },
+        { label: 'Novos',      value: 36, color: '--chart-1' },
+      ],
+      barras: [
+        { label: 'Q1', value: 68 },
+        { label: 'Q2', value: 90 },
+        { label: 'Q3', value: 118 },
+        { label: 'Q4', value: 137 },
+      ],
+      topProdutos: [
+        { label: 'Notebook Pro 15', value: 128, display: 'R$ 128k' },
+        { label: 'Monitor 27"',     value: 96,  display: 'R$ 96k'  },
+        { label: 'Teclado Mec.',    value: 78,  display: 'R$ 78k'  },
+        { label: 'Headset BT',      value: 54,  display: 'R$ 54k'  },
+        { label: 'Mouse Ergo',      value: 34,  display: 'R$ 34k'  },
+      ],
     },
   };
+
+  /* Estoque é um snapshot — não muda com o período */
+  const ESTOQUE = [
+    { label: 'Notebook Pro 15', value: 3,  max: 40 },
+    { label: 'Headset BT',      value: 5,  max: 35 },
+    { label: 'Monitor 27"',     value: 8,  max: 50 },
+    { label: 'Teclado Mec.',    value: 12, max: 60 },
+    { label: 'Mouse Ergo',      value: 22, max: 80 },
+  ];
+
+  let periodoAtual = '1a';
+  const visivel = { receita: true, despesa: true };
 
   /* ===== MENU MOBILE ===== */
   const body = document.body;
@@ -69,7 +167,7 @@
   const ajudaBtn  = $('#ajudaBtn');
   const ajudaPop  = $('#popAjuda');
 
-  function fecharTodos() {
+  function fecharPops() {
     [perfilPop, ajudaPop].forEach(p => {
       if (!p) return;
       p.classList.remove('is-open');
@@ -80,8 +178,8 @@
     });
   }
 
-  function abrir(pop, btn) {
-    fecharTodos();
+  function abrirPop(pop, btn) {
+    fecharPops();
     pop.classList.add('is-open');
     pop.setAttribute('aria-hidden', 'false');
     btn.setAttribute('aria-expanded', 'true');
@@ -89,15 +187,15 @@
 
   perfilBtn?.addEventListener('click', e => {
     e.stopPropagation();
-    perfilPop.classList.contains('is-open') ? fecharTodos() : abrir(perfilPop, perfilBtn);
+    perfilPop.classList.contains('is-open') ? fecharPops() : abrirPop(perfilPop, perfilBtn);
   });
   ajudaBtn?.addEventListener('click', e => {
     e.stopPropagation();
-    ajudaPop.classList.contains('is-open') ? fecharTodos() : abrir(ajudaPop, ajudaBtn);
+    ajudaPop.classList.contains('is-open') ? fecharPops() : abrirPop(ajudaPop, ajudaBtn);
   });
   perfilPop?.addEventListener('click', e => e.stopPropagation());
   ajudaPop?.addEventListener('click', e => e.stopPropagation());
-  document.addEventListener('click', fecharTodos);
+  document.addEventListener('click', fecharPops);
 
   /* ===== TOAST ===== */
   const toastHost = document.createElement('div');
@@ -135,12 +233,12 @@
     item.addEventListener('click', e => {
       e.stopPropagation();
       mostrarToast(ACOES_AJUDA[item.dataset.action] || `Ação: ${item.dataset.action}`);
-      fecharTodos();
+      fecharPops();
     });
   });
 
   /* ===== COUNT-UP ===== */
-  function animateNumber(el, to, { duration = 800, decimals = 0 } = {}) {
+  function animateNumber(el, to, { duration = 700, decimals = 0 } = {}) {
     const from = parseFloat(
       String(el.textContent).replace(/\./g, '').replace(',', '.')
     ) || 0;
@@ -188,9 +286,7 @@
   /* ===== GRÁFICO PRINCIPAL ===== */
   const Chart = (() => {
     const host = $('#chart');
-    if (!host) return { render() {}, setPeriod() {} };
-
-    let periodoAtual = '1a';
+    if (!host) return { render() {} };
 
     const build = (data) => {
       const { receita, despesa, labels } = data;
@@ -231,14 +327,24 @@
       svg.appendChild(grid);
 
       const areaD = smoothPath(ptsR) + ` L 100 100 L 0 100 Z`;
-      const area = svgEl('path', { d: areaD, fill: 'url(#gArea)', opacity: '0' });
+      const area = svgEl('path', {
+        d: areaD,
+        fill: 'url(#gArea)',
+        opacity: '0',
+        class: 'serie serie--receita' + (visivel.receita ? '' : ' is-hidden'),
+      });
       svg.appendChild(area);
       requestAnimationFrame(() => {
         area.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1) .35s';
         area.style.opacity = '1';
       });
 
-      [['var(--chart-1)', ptsD], ['var(--chart-2)', ptsR]].forEach(([color, pts]) => {
+      const series = [
+        { key: 'despesa', color: 'var(--chart-1)', pts: ptsD },
+        { key: 'receita', color: 'var(--chart-2)', pts: ptsR },
+      ];
+
+      series.forEach(({ key, color, pts }) => {
         const line = svgEl('path', {
           d: smoothPath(pts),
           fill: 'none',
@@ -247,6 +353,7 @@
           'stroke-linecap': 'round',
           'stroke-linejoin': 'round',
           'vector-effect': 'non-scaling-stroke',
+          class: `serie serie--${key}` + (visivel[key] ? '' : ' is-hidden'),
         });
         svg.appendChild(line);
       });
@@ -254,7 +361,7 @@
       wrap.appendChild(svg);
 
       const points = document.createElement('div');
-      points.className = 'chart-points';
+      points.className = 'chart-points' + (visivel.receita ? '' : ' is-hidden');
       ptsR.forEach((p, i) => {
         const dot = document.createElement('span');
         dot.className = 'chart-dot';
@@ -294,40 +401,55 @@
       host.appendChild(build(data));
     };
 
-    const setPeriod = (p) => {
-      if (!DATASETS[p]) return;
-      periodoAtual = p;
-      render();
-    };
-
-    return { render, setPeriod };
+    return { render };
   })();
 
-  /* ===== ATUALIZA CARDS CONFORME PERÍODO ===== */
-  function atualizarCards(periodo) {
-    const data = DATASETS[periodo];
-    if (!data) return;
-
-    const receitaTotal = data.receita.reduce((s, v) => s + v, 0);
-    const despesaTotal = data.despesa.reduce((s, v) => s + v, 0);
-
-    const receitaEl = $('.metrics .card:nth-child(1) .num');
-    const despesaEl = $('.metrics .card:nth-child(2) .num');
-
-    if (receitaEl) animateNumber(receitaEl, Math.round(receitaTotal), { duration: 700 });
-    if (despesaEl) animateNumber(despesaEl, Math.round(despesaTotal), { duration: 700 });
-  }
-
-  /* ===== CHIPS DE PERÍODO ===== */
-  $$('.range-picker .chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      $$('.range-picker .chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const p = chip.dataset.period || '1a';
-      Chart.setPeriod(p);
-      atualizarCards(p);
+  /* ===== TOGGLE DE SÉRIES (legendas) ===== */
+  $$('.legend [data-serie]').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.serie;
+      visivel[key] = !visivel[key];
+      el.classList.toggle('off', !visivel[key]);
+      $$(`#chart .serie--${key}`).forEach(s => s.classList.toggle('is-hidden', !visivel[key]));
+      if (key === 'receita') {
+        $('#chart .chart-points')?.classList.toggle('is-hidden', !visivel.receita);
+      }
     });
   });
+
+  /* ===== ATUALIZA CARDS ===== */
+  function atualizarBadge(badgeEl, variacao, invertido) {
+    const subiu = variacao > 0;
+    const bom = invertido ? !subiu : subiu;
+
+    badgeEl.classList.remove('pos', 'neg');
+    badgeEl.classList.add(bom ? 'pos' : 'neg');
+
+    badgeEl.querySelector('.badge-icon path').setAttribute(
+      'd',
+      subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'
+    );
+    badgeEl.querySelector('.badge-value').textContent =
+      Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
+  }
+
+  function atualizarCards(periodo) {
+    const d = DATASETS[periodo];
+    if (!d) return;
+
+    const receitaTotal = d.receita.reduce((s, v) => s + v, 0);
+    const despesaTotal = d.despesa.reduce((s, v) => s + v, 0);
+
+    const rEl = $('.metrics .card:nth-child(1) .num');
+    const dEl = $('.metrics .card:nth-child(2) .num');
+    const rBadge = $('.metrics .card:nth-child(1) .card-badge');
+    const dBadge = $('.metrics .card:nth-child(2) .card-badge');
+
+    if (rEl) animateNumber(rEl, Math.round(receitaTotal), { duration: 700 });
+    if (dEl) animateNumber(dEl, Math.round(despesaTotal), { duration: 700 });
+    if (rBadge) atualizarBadge(rBadge, d.variacaoReceita, false);
+    if (dBadge) atualizarBadge(dBadge, d.variacaoDespesa, true);
+  }
 
   /* ===== DONUT ===== */
   const Donut = (id, data) => {
@@ -364,17 +486,6 @@
       acc += len;
     });
 
-    const center = svgEl('text', {
-      x: cx, y: cy + 5,
-      'text-anchor': 'middle',
-      'font-family': 'JetBrains Mono, monospace',
-      'font-size': '14',
-      'font-weight': '600',
-      fill: 'var(--fg)',
-    });
-    center.textContent = data[0]?.center || '';
-    svg.appendChild(center);
-
     host.innerHTML = '';
     host.appendChild(svg);
 
@@ -389,13 +500,13 @@
     host.appendChild(legend);
 
     requestAnimationFrame(() => {
-      svg.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1), opacity .5s ease';
+      svg.style.transition = 'transform .5s cubic-bezier(.16,1,.3,1), opacity .4s ease';
       svg.style.transform = 'scale(1)';
       svg.style.opacity = '1';
     });
   };
 
-  /* ===== BARRAS ===== */
+  /* ===== BARRAS VERTICAIS ===== */
   const Bars = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
@@ -406,7 +517,7 @@
     const ih = VH - pad.t - pad.b;
     const max = Math.max(...data.map(d => d.value)) * 1.15;
     const step = iw / data.length;
-    const bw = step * 0.5;
+    const bw = step * 0.55;
 
     const svg = svgEl('svg', {
       viewBox: `0 0 ${VW} ${VH}`,
@@ -442,8 +553,8 @@
         fill: `url(#${gid})`,
       });
       svg.appendChild(bar);
-      bar.style.transition = `y .8s cubic-bezier(.16,1,.3,1) ${i * 0.05}s,` +
-                             ` height .8s cubic-bezier(.16,1,.3,1) ${i * 0.05}s`;
+      bar.style.transition = `y .7s cubic-bezier(.16,1,.3,1) ${i * 0.04}s,` +
+                             ` height .7s cubic-bezier(.16,1,.3,1) ${i * 0.04}s`;
       requestAnimationFrame(() => {
         bar.setAttribute('y', y);
         bar.setAttribute('height', h);
@@ -457,6 +568,7 @@
       'text-anchor': 'middle',
     });
     data.forEach((d, i) => {
+      if (data.length > 8 && i % 2 !== 0) return;
       const t = svgEl('text', { x: pad.l + i * step + step / 2, y: VH - 8 });
       t.textContent = d.label;
       labelG.appendChild(t);
@@ -466,6 +578,92 @@
     host.innerHTML = '';
     host.appendChild(svg);
   };
+
+  /* ===== BARRAS HORIZONTAIS (estoque) ===== */
+  const StockList = (id, data) => {
+    const host = document.getElementById(id);
+    if (!host) return;
+
+    host.innerHTML = '';
+    data.forEach(d => {
+      const pct = Math.min(100, (d.value / d.max) * 100);
+      const critico = pct < 20;
+      const baixo = pct >= 20 && pct < 35;
+
+      const row = document.createElement('div');
+      row.className = 'hbar' + (critico ? ' is-critical' : baixo ? ' is-low' : '');
+      row.innerHTML = `
+        <div class="hbar-head">
+          <span class="hbar-label">${d.label}</span>
+          <span class="hbar-value">${d.value}<small>/${d.max}</small></span>
+        </div>
+        <div class="hbar-track">
+          <div class="hbar-fill" style="width:0%"></div>
+        </div>
+      `;
+      host.appendChild(row);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          row.querySelector('.hbar-fill').style.width = pct + '%';
+        });
+      });
+    });
+  };
+
+  /* ===== TOP PRODUTOS ===== */
+  const TopList = (id, data) => {
+    const host = document.getElementById(id);
+    if (!host) return;
+
+    const max = Math.max(...data.map(d => d.value));
+
+    host.innerHTML = '';
+    data.forEach((d, i) => {
+      const pct = (d.value / max) * 100;
+      const item = document.createElement('div');
+      item.className = 'top-item';
+      item.innerHTML = `
+        <span class="top-rank">${i + 1}</span>
+        <div class="top-info">
+          <span class="top-name">${d.label}</span>
+          <div class="top-bar"><div class="top-bar-fill" style="width:0%"></div></div>
+        </div>
+        <span class="top-value">${d.display || d.value}</span>
+      `;
+      host.appendChild(item);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          item.querySelector('.top-bar-fill').style.width = pct + '%';
+        });
+      });
+    });
+  };
+
+  /* ===== RENDER GERAL ===== */
+  function renderAll(periodo) {
+    periodoAtual = periodo;
+    const d = DATASETS[periodo];
+    if (!d) return;
+
+    Chart.render();
+    atualizarCards(periodo);
+    Donut('donutCategorias', d.categorias);
+    Donut('donutOrigem', d.origem);
+    Bars('barPeriodo', d.barras);
+    TopList('topProdutos', d.topProdutos);
+    StockList('estoqueCritico', ESTOQUE);
+  }
+
+  /* ===== CHIPS DE PERÍODO ===== */
+  $$('.range-picker .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      $$('.range-picker .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderAll(chip.dataset.period || '1a');
+    });
+  });
 
   /* ===== RELÓGIO ===== */
   const startClock = () => {
@@ -480,35 +678,10 @@
     setInterval(tick, 30_000);
   };
 
-  /* ===== RENDER GERAL ===== */
-  const renderAll = () => {
-    Chart.render();
-    atualizarCards('1a');
-    Donut('donutCategorias', [
-      { label: 'Marketing',      value: 35, color: '--chart-1' },
-      { label: 'Operacional',    value: 30, color: '--chart-2' },
-      { label: 'Salários',       value: 20, color: '--chart-3' },
-      { label: 'Infraestrutura', value: 15, color: '--chart-4' },
-    ]);
-    Donut('donutOrigem', [
-      { label: 'Recorrente', value: 58, color: '--chart-2' },
-      { label: 'Novos',      value: 42, color: '--chart-1' },
-    ]);
-    Bars('barSemana', [
-      { label: 'Seg', value: 4.5 },
-      { label: 'Ter', value: 5.2 },
-      { label: 'Qua', value: 4.8 },
-      { label: 'Qui', value: 5.5 },
-      { label: 'Sex', value: 6.2 },
-      { label: 'Sáb', value: 3.8 },
-    ]);
-  };
-
   /* ===== BOOT ===== */
   const boot = () => {
-    runCounters();
     startClock();
-    renderAll();
+    renderAll('1a');
   };
 
   if (document.readyState === 'loading') {
@@ -517,5 +690,5 @@
     boot();
   }
 
-  window.Dash = { animateNumber, runCounters, chart: Chart, renderAll };
+  window.Dash = { renderAll, animateNumber, runCounters };
 })();

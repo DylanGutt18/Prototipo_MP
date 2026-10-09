@@ -115,31 +115,31 @@
       <article class="card">
         <header>
           <span class="card-label">Receita do período</span>
-          <span class="card-badge down">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
-            12,4%
+          <span class="card-badge pos">
+            <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+            <span class="badge-value">12,4%</span>
           </span>
         </header>
         <div class="card-value">
           <small>R$</small>
           <span class="num" data-count="413">0</span><small>mil</small>
         </div>
-        <footer>no período selecionado</footer>
+        <footer>vs. período anterior</footer>
       </article>
 
       <article class="card">
         <header>
           <span class="card-label">Despesa do período</span>
-          <span class="card-badge up">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-            3,8%
+          <span class="card-badge neg">
+            <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="badge-value">3,8%</span>
           </span>
         </header>
         <div class="card-value">
           <small>R$</small>
           <span class="num" data-count="297">0</span><small>mil</small>
         </div>
-        <footer>no período selecionado</footer>
+        <footer>vs. período anterior</footer>
       </article>
     </section>
 
@@ -150,8 +150,8 @@
           <p class="panel-sub">Comparativo do período · valores em milhares</p>
         </div>
         <div class="legend">
-          <span><i class="dot" style="background:var(--chart-2)"></i>Receita</span>
-          <span><i class="dot" style="background:var(--chart-1)"></i>Despesa</span>
+          <span data-serie="receita"><i class="dot" style="background:var(--chart-2)"></i>Receita</span>
+          <span data-serie="despesa"><i class="dot" style="background:var(--chart-1)"></i>Despesa</span>
         </div>
       </header>
       <div class="chart" id="chart" aria-label="Gráfico de receita vs despesa"></div>
@@ -162,7 +162,7 @@
         <header class="panel-head">
           <div>
             <h3>Gastos por categoria</h3>
-            <p class="panel-sub">Distribuição mensal</p>
+            <p class="panel-sub">Distribuição no período</p>
           </div>
         </header>
         <div class="donut-host" id="donutCategorias"></div>
@@ -181,11 +181,33 @@
       <article class="panel panel--bars">
         <header class="panel-head">
           <div>
-            <h3>Receita por dia</h3>
-            <p class="panel-sub">Última semana · R$ mil</p>
+            <h3>Receita no período</h3>
+            <p class="panel-sub" id="barSub">R$ mil</p>
           </div>
         </header>
-        <div class="bar-host" id="barSemana"></div>
+        <div class="bar-host" id="barPeriodo"></div>
+      </article>
+    </section>
+
+    <section class="analytics analytics--2">
+      <article class="panel panel--stock">
+        <header class="panel-head">
+          <div>
+            <h3>Estoque crítico</h3>
+            <p class="panel-sub">Itens abaixo do mínimo</p>
+          </div>
+        </header>
+        <div class="stock-list" id="estoqueCritico"></div>
+      </article>
+
+      <article class="panel panel--top">
+        <header class="panel-head">
+          <div>
+            <h3>Top produtos</h3>
+            <p class="panel-sub">Mais vendidos no período</p>
+          </div>
+        </header>
+        <div class="top-list" id="topProdutos"></div>
       </article>
     </section>
 

@@ -356,7 +356,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ==========================================================================
-   CARDS
+   CARDS (receita · despesa)
    ========================================================================== */
 .metrics {
   display: grid;
@@ -406,12 +406,18 @@ a { color: inherit; text-decoration: none; }
   font-size: 11px;
   padding: 3px 7px;
   border-radius: 999px;
+  transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
+}
+.card-badge.pos {
   background: rgba(34, 197, 94, .1);
   color: var(--pos);
   border: 1px solid rgba(34, 197, 94, .2);
 }
-.card-badge.up   { background: rgba(244, 63, 94, .08); color: var(--neg); border-color: rgba(244, 63, 94, .18); }
-.card-badge.down { background: rgba(34, 197, 94, .1);  color: var(--pos); border-color: rgba(34, 197, 94, .2); }
+.card-badge.neg {
+  background: rgba(244, 63, 94, .08);
+  color: var(--neg);
+  border: 1px solid rgba(244, 63, 94, .18);
+}
 
 .card-value {
   display: flex;
@@ -463,7 +469,16 @@ a { color: inherit; text-decoration: none; }
   color: var(--fg-2);
   font-family: var(--mono);
 }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity .18s var(--ease);
+}
+.legend span:hover { opacity: 1; }
+.legend span.off { opacity: .35; }
 .legend .dot {
   width: 8px;
   height: 8px;
@@ -499,12 +514,15 @@ a { color: inherit; text-decoration: none; }
 .chart-inner.is-ready > svg {
   clip-path: inset(0 0 0 0);
 }
+.chart-inner svg .serie { transition: opacity .3s var(--ease); }
+.chart-inner svg .serie.is-hidden { opacity: 0; }
 
 .chart-points {
   position: absolute;
   inset: 16px 8px 28px;
   pointer-events: none;
 }
+.chart-points.is-hidden { display: none; }
 
 .chart-dot {
   position: absolute;
@@ -542,16 +560,22 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ==========================================================================
-   ANÁLISES
+   ANALYTICS — linhas de painéis
    ========================================================================== */
 .analytics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 16px;
 }
-.panel--donut, .panel--bars { padding: 18px 20px; animation-delay: .18s; }
+.analytics--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
+.panel--donut, .panel--bars, .panel--stock, .panel--top {
+  padding: 18px 20px;
+  animation-delay: .18s;
+}
+
+/* ---------- donut ---------- */
 .donut-host {
   display: flex;
   align-items: center;
@@ -580,8 +604,123 @@ a { color: inherit; text-decoration: none; }
 .donut-legend i { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .donut-legend b { color: var(--fg); font-weight: 500; margin-left: auto; }
 
+/* ---------- barras ---------- */
 .bar-host { width: 100%; height: 170px; }
 .bar-host svg { display: block; width: 100%; height: 100%; }
+
+/* ---------- estoque (barras horizontais) ---------- */
+.stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hbar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 5px;
+  font-size: 12.5px;
+}
+.hbar-label {
+  color: var(--fg-2);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hbar-value {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--fg);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.hbar-value small { color: var(--fg-3); font-weight: 400; }
+
+.hbar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.hbar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .8s cubic-bezier(.16, 1, .3, 1);
+}
+.hbar.is-critical .hbar-fill {
+  background: linear-gradient(90deg, var(--neg), #fb7185);
+}
+.hbar.is-critical .hbar-value { color: var(--neg); }
+.hbar.is-low .hbar-fill {
+  background: linear-gradient(90deg, var(--warn), #fbbf24);
+}
+.hbar.is-low .hbar-value { color: var(--warn); }
+
+/* ---------- top produtos ---------- */
+.top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.top-item {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+.top-item + .top-item { border-top: 1px solid var(--line); }
+
+.top-rank {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-3);
+  text-align: center;
+  width: 20px;
+}
+.top-item:nth-child(1) .top-rank { color: var(--accent-2); font-weight: 600; }
+.top-item:nth-child(2) .top-rank,
+.top-item:nth-child(3) .top-rank { color: var(--fg-2); }
+
+.top-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.top-name {
+  font-size: 12.5px;
+  color: var(--fg);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.top-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.top-bar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .8s cubic-bezier(.16, 1, .3, 1);
+}
+
+.top-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--fg);
+  font-weight: 500;
+  flex-shrink: 0;
+}
 
 /* ==========================================================================
    POPOVERS
@@ -739,6 +878,12 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
 /* ==========================================================================
    RESPONSIVO
    ========================================================================== */
+@media (max-width: 1200px) {
+  .analytics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analytics > .panel:nth-child(3) { grid-column: span 2; }
+  .analytics--2 { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 1024px) {
   :root { --menu-w: 190px; }
   .content { padding-left: 22px; padding-right: 22px; }
@@ -765,11 +910,7 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   .overlay { display: block; }
   body.menu-open { overflow: hidden; }
 
-  .tools {
-    left: 0;
-    padding: 0 12px;
-    gap: 8px;
-  }
+  .tools { left: 0; padding: 0 12px; gap: 8px; }
   .menu-btn { display: inline-flex; }
 
   .content {
@@ -792,6 +933,10 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   .panel-head { flex-direction: column; align-items: flex-start; gap: 10px; }
   .legend { font-size: 11px; }
   .chart { height: 240px; }
+
+  .analytics,
+  .analytics--2 { grid-template-columns: 1fr; }
+  .analytics > .panel:nth-child(3) { grid-column: auto; }
 
   .popover { left: calc(var(--rail-w) + 6px); width: 240px; }
   .popover--perfil { top: 12px; }

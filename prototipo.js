@@ -14,6 +14,9 @@
     return el;
   };
 
+  /* ===== MULTIPLICADOR GLOBAL ===== */
+  const MULTIPLICADOR = 4;
+
   /* ===== MOEDA ===== */
   const CURRENCY_LOCALE = { BRL: 'pt-BR', USD: 'en-US', EUR: 'de-DE' };
   const CURRENCY_SYMBOL = { BRL: 'R$', USD: '$', EUR: '€' };
@@ -22,23 +25,38 @@
   const currentCurrency = () => window.Settings?.get?.('currency') || 'BRL';
   const convertFromBRL = (v, c) => v * (EXCHANGE[c] || 1);
 
-  function formatMoney(valueBRL, opts = {}) {
+   function formatMoney(valueBRL, opts = {}) {
     const currency = opts.currency || currentCurrency();
     const compact = opts.compact !== false;
     const converted = convertFromBRL(valueBRL, currency);
+
     const options = {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     };
+
     if (compact) {
       options.notation = 'compact';
       options.compactDisplay = 'short';
+
+      // Escala as casas decimais conforme o tamanho do valor
+      const abs = Math.abs(converted);
+      if (abs >= 1_000_000_000) {
+        options.minimumFractionDigits = 2;
+        options.maximumFractionDigits = 2;
+      } else if (abs >= 1_000_000) {
+        options.minimumFractionDigits = 2;
+        options.maximumFractionDigits = 2;
+      } else if (abs >= 100_000) {
+        options.minimumFractionDigits = 1;
+        options.maximumFractionDigits = 1;
+      }
     }
+
     return new Intl.NumberFormat(CURRENCY_LOCALE[currency] || 'pt-BR', options).format(converted);
   }
-
   /* ===== FILIAIS ===== */
   const FILIAIS = {
     campinas: { nome: 'Campinas', pesoReceita: 0.42, pesoDespesa: 0.38 },
@@ -150,7 +168,7 @@
   const visivel = { receita: true, despesa: true };
   let hasBooted = false;
 
-  /* ===== DADOS FILTRADOS PELAS FILIAIS ===== */
+  /* ===== DADOS FILTRADOS ===== */
   function getDados(periodo = periodoAtual) {
     const base = DATASETS[periodo];
     if (!base) return null;
@@ -158,13 +176,14 @@
     const selecionadas = getSelectedBranches();
     const pesoR = selecionadas.reduce((s, k) => s + (FILIAIS[k]?.pesoReceita || 0), 0);
     const pesoD = selecionadas.reduce((s, k) => s + (FILIAIS[k]?.pesoDespesa || 0), 0);
+    const mult = MULTIPLICADOR;
 
     return {
       ...base,
-      receita: base.receita.map(v => v * pesoR),
-      despesa: base.despesa.map(v => v * pesoD),
-      barras: base.barras.map(b => ({ ...b, value: b.value * pesoR })),
-      topProdutos: base.topProdutos.map(p => ({ ...p, value: p.value * pesoR })),
+      receita: base.receita.map(v => v * pesoR * mult),
+      despesa: base.despesa.map(v => v * pesoD * mult),
+      barras: base.barras.map(b => ({ ...b, value: b.value * pesoR * mult })),
+      topProdutos: base.topProdutos.map(p => ({ ...p, value: p.value * pesoR * mult })),
       categorias: base.categorias,
       origem: base.origem,
       variacaoReceita: base.variacaoReceita,
@@ -310,7 +329,7 @@
     return d;
   };
 
-  /* ===== GRÁFICO ===== */
+  /* ===== GRÁFICO DE LINHA ===== */
   const Chart = (() => {
     const host = $('#chart');
     if (!host) return { render() {} };
@@ -623,10 +642,11 @@
     host.appendChild(legend);
   };
 
-  /* ===== BARRAS ===== */
+  /* ===== BARRAS VERTICAIS (com tooltip) ===== */
   const Bars = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
+
     const VW = 360, VH = 170;
     const pad = { t: 12, r: 4, b: 24, l: 4 };
     const iw = VW - pad.l - pad.r;
@@ -634,6 +654,9 @@
     const max = Math.max(...data.map(d => d.value)) * 1.15;
     const step = iw / data.length;
     const bw = step * 0.55;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bar-inner';
 
     const svg = svgEl('svg', {
       viewBox: `0 0 ${VW} ${VH}`,
@@ -685,8 +708,52 @@
     });
     svg.appendChild(labelG);
 
+    wrap.appendChild(svg);
+
+    // camada de hover
+    const hover = document.createElement('div');
+    hover.className = 'bar-hover';
+
+    data.forEach((d, i) => {
+      const barX = pad.l + i * step + (step - bw) / 2;
+      const h = (d.value / max) * ih;
+      const y = pad.t + ih - h;
+
+      const zone = document.createElement('span');
+      zone.className = 'bar-hover-zone';
+      zone.style.left = (pad.l + i * step) / VW * 100 + '%';
+      zone.style.width = step / VW * 100 + '%';
+      zone.style.top = y / VH * 100 + '%';
+      zone.style.height = (pad.t + ih - y) / VH * 100 + '%';
+      zone.dataset.label = d.label;
+      zone.dataset.money = formatMoney(d.value * 1000);
+      zone.dataset.tipLeft = ((barX + bw / 2) / VW * 100) + '%';
+      zone.dataset.tipTop = (y / VH * 100) + '%';
+      hover.appendChild(zone);
+    });
+    wrap.appendChild(hover);
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'bar-tooltip';
+    wrap.appendChild(tooltip);
+
+    hover.querySelectorAll('.bar-hover-zone').forEach(zone => {
+      zone.addEventListener('mouseenter', () => {
+        tooltip.innerHTML = `
+          <div class="tt-label">${zone.dataset.label}</div>
+          <div class="tt-val">${zone.dataset.money}</div>
+        `;
+        tooltip.style.left = zone.dataset.tipLeft;
+        tooltip.style.top = zone.dataset.tipTop;
+        tooltip.classList.add('is-visible');
+      });
+      zone.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('is-visible');
+      });
+    });
+
     host.innerHTML = '';
-    host.appendChild(svg);
+    host.appendChild(wrap);
   };
 
   /* ===== ESTOQUE ===== */
@@ -745,7 +812,6 @@
 
   /* ===== CARD DE META ===== */
   function updateGoalUI() {
-    // ---- painel de configurações ----
     const input = $('#goalInput');
     const symbol = $('#goalCurrencySymbol');
     const progress = $('#goalProgress');
@@ -753,7 +819,6 @@
     const percent = $('#goalPercent');
     const remaining = $('#goalRemaining');
 
-    // ---- card do dashboard ----
     const metaEmpty = $('#metaEmpty');
     const metaValueWrap = $('#metaValueWrap');
     const metaValue = $('#metaValue');
@@ -769,7 +834,6 @@
 
     if (symbol) symbol.textContent = CURRENCY_SYMBOL[currency] || 'R$';
 
-    // input
     if (input && document.activeElement !== input) {
       const locale = CURRENCY_LOCALE[currency] || 'pt-BR';
       const displayValue = convertFromBRL(goalBRL, currency);
@@ -778,7 +842,6 @@
         : '';
     }
 
-    // painel progress
     if (progress) progress.hidden = goalBRL <= 0;
 
     const revenue = receitaBRL();
@@ -802,7 +865,6 @@
           : `Faltam ${formatMoney(remainingBRL)}`;
     }
 
-    // card do dashboard
     if (!metaEmpty) return;
 
     if (goalBRL <= 0) {
@@ -828,7 +890,7 @@
     }
     if (metaRemaining) {
       metaRemaining.innerHTML = complete
-        ? '<strong>Meta atingida!</strong>'
+        ? 'Meta atingida!'
         : `Faltam <strong>${formatMoney(remainingBRL)}</strong>`;
     }
     if (metaBadge) {
@@ -838,7 +900,6 @@
     if (metaBadgeValue) metaBadgeValue.textContent = Math.round(pct) + '%';
   }
 
-  // input da meta
   const goalInput = $('#goalInput');
   if (goalInput) {
     goalInput.addEventListener('input', () => {
@@ -893,7 +954,6 @@
   filterMenu?.addEventListener('change', e => {
     const input = e.target.closest('input[type="checkbox"]');
     if (!input) return;
-
     const marcadas = $$('#filterMenu input[type="checkbox"]:checked').map(i => i.value);
     const final = marcadas.length ? marcadas : FILIAL_ORDER.slice();
     if (!marcadas.length) {
@@ -1081,7 +1141,7 @@
     setInterval(tick, 30_000);
   };
 
-  /* ===== REAGE A MUDANÇAS DE SETTINGS ===== */
+  /* ===== REAGE A SETTINGS ===== */
   let snap = { currency: null, period: null, filiais: null, goalBRL: null };
 
   document.addEventListener('settings:change', (e) => {
@@ -1098,7 +1158,6 @@
     snap.filiais = s.selectedBranches ? [...s.selectedBranches] : null;
     snap.goalBRL = s.goalBRL;
 
-    // Sincroniza checkboxes do filtro se a mudança veio de fora
     if (filialChanged && s.selectedBranches) {
       $$('#filterMenu input[type="checkbox"]').forEach(inp => {
         inp.checked = s.selectedBranches.includes(inp.value);
@@ -1128,7 +1187,6 @@
     snap.filiais = s.selectedBranches ? [...s.selectedBranches] : null;
     snap.goalBRL = s.goalBRL;
 
-    // Sincroniza UI do filtro
     if (Array.isArray(s.selectedBranches)) {
       $$('#filterMenu input[type="checkbox"]').forEach(inp => {
         inp.checked = s.selectedBranches.includes(inp.value);

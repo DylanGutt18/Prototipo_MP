@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js — menu · gráficos · filiais · meta · período · popovers
+   prototipo.js
    ========================================================================== */
 (() => {
   'use strict';
@@ -14,7 +14,6 @@
     return el;
   };
 
-  /* ===== MULTIPLICADOR GLOBAL ===== */
   const MULTIPLICADOR = 4;
 
   /* ===== MOEDA ===== */
@@ -25,7 +24,7 @@
   const currentCurrency = () => window.Settings?.get?.('currency') || 'BRL';
   const convertFromBRL = (v, c) => v * (EXCHANGE[c] || 1);
 
-   function formatMoney(valueBRL, opts = {}) {
+  function formatMoney(valueBRL, opts = {}) {
     const currency = opts.currency || currentCurrency();
     const compact = opts.compact !== false;
     const converted = convertFromBRL(valueBRL, currency);
@@ -40,13 +39,8 @@
     if (compact) {
       options.notation = 'compact';
       options.compactDisplay = 'short';
-
-      // Escala as casas decimais conforme o tamanho do valor
       const abs = Math.abs(converted);
-      if (abs >= 1_000_000_000) {
-        options.minimumFractionDigits = 2;
-        options.maximumFractionDigits = 2;
-      } else if (abs >= 1_000_000) {
+      if (abs >= 1_000_000) {
         options.minimumFractionDigits = 2;
         options.maximumFractionDigits = 2;
       } else if (abs >= 100_000) {
@@ -57,6 +51,7 @@
 
     return new Intl.NumberFormat(CURRENCY_LOCALE[currency] || 'pt-BR', options).format(converted);
   }
+
   /* ===== FILIAIS ===== */
   const FILIAIS = {
     campinas: { nome: 'Campinas', pesoReceita: 0.42, pesoDespesa: 0.38 },
@@ -168,7 +163,6 @@
   const visivel = { receita: true, despesa: true };
   let hasBooted = false;
 
-  /* ===== DADOS FILTRADOS ===== */
   function getDados(periodo = periodoAtual) {
     const base = DATASETS[periodo];
     if (!base) return null;
@@ -201,7 +195,7 @@
     return d ? d.despesa.reduce((s, v) => s + v, 0) * 1000 : 0;
   }
 
-  /* ===== MENU MOBILE ===== */
+  /* ===== MENU ===== */
   const body = document.body;
   const setMenu = (open) => {
     body.classList.toggle('menu-open', open);
@@ -256,6 +250,11 @@
   perfilPop?.addEventListener('click', e => e.stopPropagation());
   ajudaPop?.addEventListener('click', e => e.stopPropagation());
   document.addEventListener('click', fecharPops);
+
+  /* ===== SETTINGS BTN NO TOPBAR (mobile) ===== */
+  $('#topbarSettingsBtn')?.addEventListener('click', () => {
+    window.Settings?.open?.();
+  });
 
   /* ===== TOAST ===== */
   const toastHost = document.createElement('div');
@@ -329,7 +328,7 @@
     return d;
   };
 
-  /* ===== GRÁFICO DE LINHA ===== */
+  /* ===== GRÁFICO DE LINHA (hover + click + touch) ===== */
   const Chart = (() => {
     const host = $('#chart');
     if (!host) return { render() {} };
@@ -432,15 +431,20 @@
 
       chartData = { ptsR, ptsD, labels, n, receita, despesa };
 
-      hoverLayer.addEventListener('mousemove', e => {
-        if (!chartData) return;
-        const rect = wrap.getBoundingClientRect();
-        const padL = 8, padR = 8, padT = 16, padB = 28;
-        const innerW = rect.width - padL - padR;
-        const x = e.clientX - rect.left - padL;
-        const ratio = Math.max(0, Math.min(1, x / innerW));
-        const idx = Math.round(ratio * (chartData.n - 1));
+      let pinnedIdx = -1;
+      let hideTimer = null;
 
+      function idxFromClientX(clientX) {
+        const rect = wrap.getBoundingClientRect();
+        const padL = 8, padR = 8;
+        const innerW = rect.width - padL - padR;
+        const x = clientX - rect.left - padL;
+        const ratio = Math.max(0, Math.min(1, x / innerW));
+        return Math.round(ratio * (chartData.n - 1));
+      }
+
+      function showTooltipAt(idx) {
+        if (!chartData) return;
         const pR = chartData.ptsR[idx];
         const pD = chartData.ptsD[idx];
         cursor.style.left = pR[0] + '%';
@@ -460,6 +464,8 @@
           </div>
         `;
 
+        const rect = wrap.getBoundingClientRect();
+        const padT = 16, padB = 28;
         const topY = Math.min(pR[1], pD[1]);
         const padTopPercent = (padT / rect.height) * 100;
         const plotHeightPercent = 100 - padTopPercent - (padB / rect.height) * 100;
@@ -469,11 +475,61 @@
         tooltip.style.top = topPos + '%';
         tooltip.classList.add('is-visible');
         hoverLayer.classList.add('is-active');
-      });
+      }
 
-      hoverLayer.addEventListener('mouseleave', () => {
+      function hideTooltip() {
         tooltip.classList.remove('is-visible');
         hoverLayer.classList.remove('is-active');
+        pinnedIdx = -1;
+      }
+
+      // MOUSE
+      hoverLayer.addEventListener('mousemove', e => {
+        if (pinnedIdx !== -1) return;
+        showTooltipAt(idxFromClientX(e.clientX));
+      });
+      hoverLayer.addEventListener('mouseleave', () => {
+        if (pinnedIdx !== -1) return;
+        hideTooltip();
+      });
+
+      // CLICK — fixa/desfixa
+      hoverLayer.addEventListener('click', e => {
+        e.stopPropagation();
+        if (pinnedIdx === -1) {
+          const idx = idxFromClientX(e.clientX);
+          showTooltipAt(idx);
+          pinnedIdx = idx;
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(hideTooltip, 5000);
+        } else {
+          hideTooltip();
+        }
+      });
+
+      // TOUCH — arrasta para inspecionar
+      hoverLayer.addEventListener('touchstart', e => {
+        const t = e.touches[0];
+        if (!t) return;
+        showTooltipAt(idxFromClientX(t.clientX));
+        pinnedIdx = idxFromClientX(t.clientX);
+        clearTimeout(hideTimer);
+      }, { passive: true });
+
+      hoverLayer.addEventListener('touchmove', e => {
+        const t = e.touches[0];
+        if (!t) return;
+        const idx = idxFromClientX(t.clientX);
+        showTooltipAt(idx);
+        pinnedIdx = idx;
+        clearTimeout(hideTimer);
+      }, { passive: true });
+
+      hoverLayer.addEventListener('touchend', () => {
+        hideTimer = setTimeout(hideTooltip, 2500);
+      });
+      hoverLayer.addEventListener('touchcancel', () => {
+        hideTimer = setTimeout(hideTooltip, 2500);
       });
 
       requestAnimationFrame(() => {
@@ -642,7 +698,7 @@
     host.appendChild(legend);
   };
 
-  /* ===== BARRAS VERTICAIS (com tooltip) ===== */
+  /* ===== BARRAS VERTICAIS (hover + click + touch) ===== */
   const Bars = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
@@ -710,7 +766,6 @@
 
     wrap.appendChild(svg);
 
-    // camada de hover
     const hover = document.createElement('div');
     hover.className = 'bar-hover';
 
@@ -723,12 +778,13 @@
       zone.className = 'bar-hover-zone';
       zone.style.left = (pad.l + i * step) / VW * 100 + '%';
       zone.style.width = step / VW * 100 + '%';
-      zone.style.top = y / VH * 100 + '%';
+      zone.style.top = Math.max(0, y / VH * 100) + '%';
       zone.style.height = (pad.t + ih - y) / VH * 100 + '%';
+      zone.dataset.idx = i;
       zone.dataset.label = d.label;
       zone.dataset.money = formatMoney(d.value * 1000);
       zone.dataset.tipLeft = ((barX + bw / 2) / VW * 100) + '%';
-      zone.dataset.tipTop = (y / VH * 100) + '%';
+      zone.dataset.tipTop = Math.max(0, y / VH * 100) + '%';
       hover.appendChild(zone);
     });
     wrap.appendChild(hover);
@@ -737,18 +793,57 @@
     tooltip.className = 'bar-tooltip';
     wrap.appendChild(tooltip);
 
+    let pinnedIdx = -1;
+    let hideTimer = null;
+
+    function showTooltipFor(zone) {
+      tooltip.innerHTML = `
+        <div class="tt-label">${zone.dataset.label}</div>
+        <div class="tt-val">${zone.dataset.money}</div>
+      `;
+      tooltip.style.left = zone.dataset.tipLeft;
+      tooltip.style.top = zone.dataset.tipTop;
+      tooltip.classList.add('is-visible');
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('is-visible');
+      pinnedIdx = -1;
+      hover.querySelectorAll('.bar-hover-zone').forEach(z => z.classList.remove('is-active'));
+    }
+
     hover.querySelectorAll('.bar-hover-zone').forEach(zone => {
       zone.addEventListener('mouseenter', () => {
-        tooltip.innerHTML = `
-          <div class="tt-label">${zone.dataset.label}</div>
-          <div class="tt-val">${zone.dataset.money}</div>
-        `;
-        tooltip.style.left = zone.dataset.tipLeft;
-        tooltip.style.top = zone.dataset.tipTop;
-        tooltip.classList.add('is-visible');
+        if (pinnedIdx !== -1) return;
+        showTooltipFor(zone);
       });
       zone.addEventListener('mouseleave', () => {
+        if (pinnedIdx !== -1) return;
         tooltip.classList.remove('is-visible');
+      });
+      zone.addEventListener('click', e => {
+        e.stopPropagation();
+        const idx = +zone.dataset.idx;
+        if (pinnedIdx === idx) {
+          hideTooltip();
+        } else {
+          hideTooltip();
+          showTooltipFor(zone);
+          zone.classList.add('is-active');
+          pinnedIdx = idx;
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(hideTooltip, 5000);
+        }
+      });
+      zone.addEventListener('touchstart', e => {
+        e.stopPropagation();
+        showTooltipFor(zone);
+        zone.classList.add('is-active');
+        pinnedIdx = +zone.dataset.idx;
+        clearTimeout(hideTimer);
+      }, { passive: true });
+      zone.addEventListener('touchend', () => {
+        hideTimer = setTimeout(hideTooltip, 2500);
       });
     });
 
@@ -948,9 +1043,7 @@
     e.stopPropagation();
     setFilterOpen(filterMenu.hidden);
   });
-
   filterMenu?.addEventListener('click', e => e.stopPropagation());
-
   filterMenu?.addEventListener('change', e => {
     const input = e.target.closest('input[type="checkbox"]');
     if (!input) return;
@@ -961,12 +1054,10 @@
     }
     window.Settings?.set?.('selectedBranches', final);
   });
-
   filterClear?.addEventListener('click', () => {
     $$('#filterMenu input[type="checkbox"]').forEach(i => { i.checked = true; });
     window.Settings?.set?.('selectedBranches', [...FILIAL_ORDER]);
   });
-
   document.addEventListener('click', e => {
     if (!e.target.closest('.filter-wrap')) setFilterOpen(false);
   });
@@ -974,7 +1065,7 @@
     if (e.key === 'Escape') setFilterOpen(false);
   });
 
-  /* ===== RENDER GERAL ===== */
+  /* ===== RENDER ===== */
   function renderAll(periodo) {
     periodoAtual = periodo || periodoAtual;
     const d = getDados();
@@ -990,7 +1081,6 @@
     updateGoalUI();
   }
 
-  /* ===== PERÍODO ===== */
   function setPeriodo(p) {
     if (!DATASETS[p]) return;
     periodoAtual = p;

@@ -53,7 +53,7 @@
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
       <span>Demanda</span>
     </a>
-    <a href="#" class="menu-item">
+    <a href="#" class="menu-item" data-view="estoque">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
       <span>Estoque</span>
     </a>
@@ -524,6 +524,141 @@
       </section>
 
     </section>
+
+        <!-- ====================================================
+         VIEW · ESTOQUE
+         ==================================================== -->
+    <section class="view" data-view="estoque" hidden>
+
+      <div class="content-header">
+        <div>
+          <h1>Estoque</h1>
+          <p class="subtitle">Inventário, giro e cobertura · <span id="filiaisLabelEstoque">Todas as filiais</span></p>
+        </div>
+        <div class="range-picker" role="group" aria-label="Período">
+          <button class="chip" data-period="30d">30d</button>
+          <button class="chip" data-period="90d">90d</button>
+          <button class="chip active" data-period="1a">1a</button>
+        </div>
+      </div>
+
+      <section class="metrics metrics--4">
+
+        <article class="card" id="estoqueCardSkus" style="--c-rgb: var(--c-rgb-1)">
+          <header>
+            <span class="card-label">SKUs ativos</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" id="estoqueSkusValor" data-current="0">0</span></div>
+          <footer>itens cadastrados</footer>
+        </article>
+
+        <article class="card" id="estoqueCardValor" style="--c-rgb: var(--accent-rgb)">
+          <header>
+            <span class="card-label">Valor em estoque</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" id="estoqueValorValor" data-current="0">0</span></div>
+          <footer>capital em estoque</footer>
+        </article>
+
+        <article class="card card--percent" id="estoqueCardGiro" style="--c-rgb: 34, 197, 94">
+          <header>
+            <span class="card-label">Giro de estoque</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="estoqueGiroValor" data-current="0">0</span>
+            <small>x</small>
+          </div>
+          <footer>giro por ano</footer>
+        </article>
+
+        <article class="card card--percent" id="estoqueCardCobertura" style="--c-rgb: var(--c-rgb-2)">
+          <header>
+            <span class="card-label">Cobertura</span>
+            <span class="card-badge neg">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="estoqueCoberturaValor" data-current="0">0</span>
+            <small>dias</small>
+          </div>
+          <footer>de estoque disponível</footer>
+        </article>
+
+      </section>
+
+      <section class="panel">
+        <header class="panel-head">
+          <div>
+            <h3>Movimentação de estoque</h3>
+            <p class="panel-sub">Entradas acima · Saídas abaixo · passe o mouse para detalhes</p>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:var(--chart-2)"></i>Entradas</span>
+            <span><i class="dot" style="background:var(--chart-1)"></i>Saídas</span>
+          </div>
+        </header>
+        <div class="chart chart--diverging" id="chartEstoque" aria-label="Movimentação de estoque"></div>
+      </section>
+
+      <section class="analytics">
+
+        <article class="panel">
+          <header class="panel-head">
+            <div>
+              <h3>Curva ABC</h3>
+              <p class="panel-sub">Concentração do valor em estoque</p>
+            </div>
+          </header>
+          <div id="abcEstoque"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div>
+              <h3>Estoque por armazém</h3>
+              <p class="panel-sub">Distribuição física</p>
+            </div>
+          </header>
+          <div class="margin-list" id="armazemEstoque"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div>
+              <h3>Status por categoria</h3>
+              <p class="panel-sub">Ocupação e nível</p>
+            </div>
+          </header>
+          <div class="margin-list" id="categoriaEstoque"></div>
+        </article>
+
+      </section>
+
+      <section class="panel">
+        <header class="panel-head">
+          <div>
+            <h3>Inventário detalhado</h3>
+            <p class="panel-sub">SKUs ordenados por valor total</p>
+          </div>
+        </header>
+        <div class="sku-table" id="tabelaEstoque"></div>
+      </section>
+
+    </section>
   </main>
 
   <nav class="bottom-nav" aria-label="Navegação rápida">
@@ -539,7 +674,7 @@
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
       <span>Demanda</span>
     </a>
-    <a href="#">
+    <a href="#" data-view="estoque">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>
       <span>Estoque</span>
     </a>
@@ -761,5 +896,6 @@
   <script src="configs.js"></script>
   <script src="profits.js"></script>
   <script src="demanda.js"></script>
+  <script src="estoque.js"></script>
 </body>
 </html>

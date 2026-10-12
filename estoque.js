@@ -1,6 +1,6 @@
 /* ==========================================================================
    estoque.js — View "Estoque"
-   Deriva estoque e movimentação do MESMO dataset da Visão Geral.
+   SKUs e quantidades alinhados com o array ESTOQUE da Visão Geral.
    ========================================================================== */
 (() => {
   'use strict';
@@ -39,21 +39,27 @@
   const elTableHost     = $('#tabelaEstoque');
   const elFiliaisLbl    = $('#filiaisLabelEstoque');
 
-  /* ===== SKUs BASE (snapshot do inventário) ===== */
+  /* ===== SKUs — valores idênticos ao ESTOQUE da Visão Geral =====
+     Notebook 15: 3/40 · Headset: 5/35 · Monitor 27": 8/50
+     Teclado: 12/60 · Mouse: 22/80
+     Extra: outros SKUs em bom estado.
+  */
   const SKUS = [
-    { code: 'HW-NB-015',   name: 'Notebook Pro 15',     cat: 'Notebooks',    qty: 28, min: 12, unit: 5800 },
-    { code: 'HW-MN-027',   name: 'Monitor 27"',         cat: 'Monitores',    qty: 42, min: 18, unit: 1650 },
-    { code: 'HW-SSD-1T',   name: 'SSD Externo 1TB',     cat: 'Armazenam.',   qty: 30, min: 15, unit: 620  },
-    { code: 'HW-KB-MEC',   name: 'Teclado Mecânico',    cat: 'Periféricos',  qty: 75, min: 30, unit: 280  },
-    { code: 'HW-WC-HD',    name: 'Webcam Full HD',      cat: 'Periféricos',  qty: 45, min: 20, unit: 340  },
-    { code: 'HW-CH-ERG',   name: 'Cadeira Ergonômica',  cat: 'Mobiliário',   qty: 10, min: 8,  unit: 1450 },
-    { code: 'HW-DK-USBC',  name: 'Docking Station',     cat: 'Periféricos',  qty: 12, min: 15, unit: 480  },
-    { code: 'HW-HS-BT',    name: 'Headset Bluetooth',   cat: 'Áudio',        qty: 14, min: 20, unit: 210  },
-    { code: 'HW-MG-DGT',   name: 'Mesa Digitalizadora', cat: 'Periféricos',  qty: 3,  min: 10, unit: 780  },
-    { code: 'HW-MS-ERG',   name: 'Mouse Ergo',          cat: 'Periféricos',  qty: 6,  min: 25, unit: 130  },
+    // Críticos (mesma qtd da Visão Geral)
+    { code: 'HW-NB-015',   name: 'Notebook Pro 15',     cat: 'Notebooks',    qty: 3,  min: 12, unit: 5800 },
+    { code: 'HW-HS-BT',    name: 'Headset Bluetooth',   cat: 'Áudio',        qty: 5,  min: 10, unit: 210 },
+    { code: 'HW-MN-027',   name: 'Monitor 27"',         cat: 'Monitores',    qty: 8,  min: 18, unit: 1650 },
+    // Baixos (mesma qtd da Visão Geral)
+    { code: 'HW-KB-MEC',   name: 'Teclado Mecânico',    cat: 'Periféricos',  qty: 12, min: 24, unit: 280 },
+    { code: 'HW-MS-ERG',   name: 'Mouse Ergo',          cat: 'Periféricos',  qty: 22, min: 30, unit: 130 },
+    // Em estoque normal
+    { code: 'HW-SSD-1T',   name: 'SSD Externo 1TB',     cat: 'Armazenam.',   qty: 45, min: 15, unit: 620 },
+    { code: 'HW-WC-HD',    name: 'Webcam Full HD',      cat: 'Periféricos',  qty: 38, min: 20, unit: 340 },
+    { code: 'HW-CH-ERG',   name: 'Cadeira Ergonômica',  cat: 'Mobiliário',   qty: 24, min: 8,  unit: 1450 },
+    { code: 'HW-DK-USBC',  name: 'Docking Station',     cat: 'Periféricos',  qty: 32, min: 15, unit: 480 },
+    { code: 'HW-MG-DGT',   name: 'Mesa Digitalizadora', cat: 'Periféricos',  qty: 18, min: 10, unit: 780 },
   ];
 
-  /* ===== MOVIMENTAÇÃO POR PERÍODO ===== */
   const MOV = {
     '30d': {
       labels: ['S1', 'S2', 'S3', 'S4'],
@@ -75,18 +81,15 @@
     },
   };
 
-  /* Variações fictícias para os badges */
   const VARIACOES = {
     '30d': { skus: 0.0, valor: 1.2, giro: 5.1, cobertura: -3.2 },
     '90d': { skus: 0.0, valor: 2.4, giro: 7.8, cobertura: -4.5 },
     '1a':  { skus: 0.0, valor: 2.3, giro: 8.4, cobertura: -5.1 },
   };
 
-  /* Classes ABC por faixas (curva cumulativa) */
   const ABC_A = 0.80;
   const ABC_B = 0.95;
 
-  /* ===== UTILS ===== */
   function pesoFiliais() {
     const sel = Dash.getSelectedBranches();
     return sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoReceita || 0), 0) || 1;
@@ -102,22 +105,17 @@
     return s === 'crit' ? 'Crítico' : s === 'low' ? 'Nível baixo' : 'Em estoque';
   }
 
-  /* ===== SKUs FILTRADOS ===== */
   function getSkus() {
-    const peso = pesoFiliais();
+    // Não aplica peso de filial — inventário é consolidado, igual à Visão Geral
     return SKUS.map(s => {
-      const qty = Math.max(0, Math.round(s.qty * peso));
-      const min = Math.max(1, Math.round(s.min * peso));
-      const unit = s.unit;
-      const total = qty * unit;
-      const status = statusOf(qty, min);
-      return { ...s, qty, min, unit, total, status };
+      const total = s.qty * s.unit;
+      const status = statusOf(s.qty, s.min);
+      return { ...s, total, status };
     });
   }
 
   function getTotais() {
     const skus = getSkus();
-    const skusAtivos = skus.length;
     const valorTotal = skus.reduce((s, k) => s + k.total, 0);
 
     const p = Dash.getPeriod();
@@ -125,24 +123,23 @@
     const peso = pesoFiliais();
 
     const saidasPeriodo = mov.saidas.reduce((s, v) => s + v, 0) * peso;
-    const estoqueMedio = skus.reduce((s, k) => s + k.qty, 0) / 2;
+    const totalQty = skus.reduce((s, k) => s + k.qty, 0);
     const saidaDiaria = saidasPeriodo / mov.dias;
+    const cobertura = saidaDiaria > 0 ? totalQty / saidaDiaria : 0;
 
-    const giro = estoqueMedio > 0 ? (saidasPeriodo / (mov.dias / 365)) / Math.max(estoqueMedio, 1) / 10 : 0;
-    // Ajuste para ficar realista em torno de 4-5x/ano
-    const giroAjustado = Math.max(0.5, Math.min(20, giro * 4.2 / Math.max(1, peso)));
-
-    const cobertura = saidaDiaria > 0 ? (skus.reduce((s, k) => s + k.qty, 0) / saidaDiaria) : 0;
+    // Giro: saída anual / estoque médio — normalizado para 4-5x/ano
+    const saidaAnual = saidasPeriodo * (365 / mov.dias);
+    const estoqueMedio = totalQty / 2;
+    const giro = estoqueMedio > 0 ? saidaAnual / estoqueMedio / Math.max(1, totalQty / 300) : 0;
 
     return {
-      skusAtivos,
+      skusAtivos: skus.length,
       valorTotal,
-      giro: giroAjustado,
+      giro: Math.max(0.5, Math.min(20, giro)),
       cobertura,
     };
   }
 
-  /* ===== LABEL DE FILIAIS ===== */
   function atualizarFiliaisLabel() {
     if (!elFiliaisLbl) return;
     const sel = Dash.getSelectedBranches();
@@ -152,7 +149,6 @@
     else elFiliaisLbl.textContent = sel.map(k => Dash.FILIAIS[k].nome).join(' + ');
   }
 
-  /* ===== BADGE ===== */
   function atualizarBadge(card, variacao, invertido = false) {
     if (!card) return;
     const badge = card.querySelector('.card-badge');
@@ -171,7 +167,6 @@
     if (valEl) valEl.textContent = Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
   }
 
-  /* ===== CARDS ===== */
   function renderCards() {
     const t = getTotais();
     const p = Dash.getPeriod();
@@ -191,7 +186,6 @@
   /* ===== GRÁFICO DIVERGENTE ===== */
   const Chart = (() => {
     if (!elChartHost) return { render() {} };
-    let chartData = null;
 
     function build() {
       const p = Dash.getPeriod();
@@ -221,10 +215,8 @@
         'aria-hidden': 'true',
       });
 
-      // grid horizontal
       const grid = svgEl('g', {
-        stroke: 'var(--chart-grid)',
-        'stroke-width': '1',
+        stroke: 'var(--chart-grid)', 'stroke-width': '1',
         'vector-effect': 'non-scaling-stroke',
       });
       [16, 28, 40, 64, 76, 88].forEach(y => {
@@ -232,17 +224,11 @@
       });
       svg.appendChild(grid);
 
-      // eixo zero destacado
       svg.appendChild(svgEl('line', {
-        x1: padL, y1: eixoY,
-        x2: 100 - padR, y2: eixoY,
-        stroke: 'var(--line-2)',
-        'stroke-width': '1',
+        x1: padL, y1: eixoY, x2: 100 - padR, y2: eixoY,
+        stroke: 'var(--line-2)', 'stroke-width': '1',
         'vector-effect': 'non-scaling-stroke',
       }));
-
-      // barras
-      const bars = [];
 
       labels.forEach((_, i) => {
         const x = padL + i * step + (step - bw) / 2;
@@ -251,13 +237,11 @@
 
         const barE = svgEl('rect', {
           x, y: eixoY - hE, width: bw, height: hE, rx: 2,
-          fill: 'var(--chart-2)',
-          opacity: '.95',
+          fill: 'var(--chart-2)', opacity: '.95',
         });
         const barS = svgEl('rect', {
           x, y: eixoY, width: bw, height: hS, rx: 2,
-          fill: 'var(--chart-1)',
-          opacity: '.95',
+          fill: 'var(--chart-1)', opacity: '.95',
         });
 
         barE.style.transformOrigin = `${x + bw / 2}px ${eixoY}px`;
@@ -269,13 +253,10 @@
 
         svg.appendChild(barE);
         svg.appendChild(barS);
-
-        bars.push({ x: padL + i * step, w: step, i });
       });
 
       wrap.appendChild(svg);
 
-      // labels
       const labelsEl = document.createElement('div');
       labelsEl.className = 'chart-labels';
       const mostrarTodas = labels.length <= 8;
@@ -290,7 +271,6 @@
       });
       wrap.appendChild(labelsEl);
 
-      // hover
       const hoverLayer = document.createElement('div');
       hoverLayer.className = 'chart-hover';
       wrap.appendChild(hoverLayer);
@@ -299,18 +279,15 @@
       tooltip.className = 'chart-tooltip';
       wrap.appendChild(tooltip);
 
-      chartData = { bars, entradas, saidas, labels, n, eixoY, hMax, maxV };
-
-      function showAt(i, clientX) {
-        const { bars, entradas, saidas, labels, eixoY, hMax, maxV, n } = chartData;
+      function showAt(i) {
         const rect = wrap.getBoundingClientRect();
         const padL = 8, padR = 8;
         const innerW = rect.width - padL - padR;
         const centerX = ((i + 0.5) / n) * innerW + padL;
-
         const label = labels[i];
         const p = Dash.getPeriod();
-        const prefix = p === '1a' ? 'Mês' : p === '90d' ? 'Semana' : 'Semana';
+        const prefix = p === '1a' ? 'Mês' : 'Semana';
+        const saldo = entradas[i] - saidas[i];
 
         tooltip.innerHTML = `
           <div class="tt-label">${prefix} ${label}</div>
@@ -324,15 +301,12 @@
           </div>
           <div class="tt-row" style="border-top:1px solid var(--line);padding-top:4px;margin-top:4px">
             <span>Saldo</span>
-            <span class="tt-val" style="color:${entradas[i] >= saidas[i] ? 'var(--pos)' : 'var(--neg)'}">${entradas[i] - saidas[i] > 0 ? '+' : ''}${entradas[i] - saidas[i]} un.</span>
+            <span class="tt-val" style="color:${saldo >= 0 ? 'var(--pos)' : 'var(--neg)'}">${saldo > 0 ? '+' : ''}${saldo} un.</span>
           </div>
         `;
 
-        const padTopPercent = 16;
-        const topPos = padTopPercent;
-
         tooltip.style.left = ((centerX / rect.width) * 100) + '%';
-        tooltip.style.top = topPos + '%';
+        tooltip.style.top = '16%';
         tooltip.classList.add('is-visible');
         hoverLayer.classList.add('is-active');
       }
@@ -351,7 +325,7 @@
         const x = e.clientX - rect.left - padL;
         const ratio = Math.max(0, Math.min(1, x / innerW));
         const idx = Math.min(n - 1, Math.floor(ratio * n));
-        showAt(idx, e.clientX);
+        showAt(idx);
       });
       hoverLayer.addEventListener('mouseleave', () => { if (!pinned) hide(); });
       hoverLayer.addEventListener('click', e => {
@@ -364,7 +338,7 @@
           const x = e.clientX - rect.left - padL;
           const ratio = Math.max(0, Math.min(1, x / innerW));
           const idx = Math.min(n - 1, Math.floor(ratio * n));
-          showAt(idx, e.clientX);
+          showAt(idx);
           pinned = true;
         }
       });
@@ -401,18 +375,10 @@
     skus.forEach(k => {
       const pctAccAntes = acc / total;
       acc += k.total;
-      const pctAccDepois = acc / total;
-
       let cls;
       if (pctAccAntes < ABC_A) cls = 'A';
       else if (pctAccAntes < ABC_B) cls = 'B';
       else cls = 'C';
-
-      // Ajuste: se cruzar a faixa, coloca na faixa que começou
-      if (pctAccAntes < ABC_A && pctAccDepois > ABC_A && pctAccDepois - ABC_A > ABC_A - pctAccAntes) {
-        // deixa em A por simplicidade, maioria dos casos
-      }
-
       classes[cls].valor += k.total;
       classes[cls].skus += 1;
     });
@@ -423,9 +389,9 @@
 
     elAbcHost.innerHTML = `
       <div class="abc-stack">
-        <div class="abc-segment abc-a" style="width:${pctA}%" title="Classe A · ${pctA.toFixed(1)}%"></div>
-        <div class="abc-segment abc-b" style="width:${pctB}%" title="Classe B · ${pctB.toFixed(1)}%"></div>
-        <div class="abc-segment abc-c" style="width:${pctC}%" title="Classe C · ${pctC.toFixed(1)}%"></div>
+        <div class="abc-segment abc-a" style="width:${pctA}%"></div>
+        <div class="abc-segment abc-b" style="width:${pctB}%"></div>
+        <div class="abc-segment abc-c" style="width:${pctC}%"></div>
       </div>
       <div class="abc-legend">
         <div class="abc-leg-item">
@@ -450,7 +416,6 @@
     `;
   }
 
-  /* ===== ESTOQUE POR ARMAZÉM ===== */
   function renderArmazens() {
     if (!elArmazemList) return;
     const skus = getSkus();
@@ -462,8 +427,7 @@
     const linhas = sel.map(k => {
       const info = Dash.FILIAIS[k];
       const peso = (info.pesoReceita || 0) / pesoTotal;
-      const valor = total * peso;
-      return { nome: info.nome, peso, valor };
+      return { nome: info.nome, peso, valor: total * peso };
     }).sort((a, b) => b.valor - a.valor);
 
     const maxVal = Math.max(...linhas.map(l => l.valor), 1);
@@ -489,12 +453,10 @@
     });
   }
 
-  /* ===== STATUS POR CATEGORIA ===== */
   function renderCategorias() {
     if (!elCategoriaList) return;
     const skus = getSkus();
 
-    // agrupa por categoria
     const map = {};
     skus.forEach(k => {
       if (!map[k.cat]) map[k.cat] = { qty: 0, min: 0, valor: 0, itens: 0 };
@@ -537,7 +499,6 @@
     });
   }
 
-  /* ===== TABELA DE SKUs ===== */
   function renderTable() {
     if (!elTableHost) return;
     const skus = [...getSkus()].sort((a, b) => b.total - a.total);
@@ -569,7 +530,6 @@
     elTableHost.innerHTML = head + rows;
   }
 
-  /* ===== RENDER GERAL ===== */
   function renderAll() {
     atualizarFiliaisLabel();
     renderCards();
@@ -580,7 +540,6 @@
     renderTable();
   }
 
-  /* ===== REGISTRO NA SPA ===== */
   Dash.registrarView('estoque', { onShow: renderAll });
 
   if (Dash.getView() === 'estoque') {

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   prototipo.js
+   prototipo.js — menu · gráficos · filiais · meta · período · popovers · SPA
    ========================================================================== */
 (() => {
   'use strict';
@@ -163,6 +163,36 @@
   const visivel = { receita: true, despesa: true };
   let hasBooted = false;
 
+  /* ===== VIEWS (SPA) ===== */
+  let viewAtual = 'geral';
+  const viewHandlers = {};
+
+  function registrarView(nome, { onShow } = {}) {
+    viewHandlers[nome] = { onShow };
+  }
+
+  function setView(nome) {
+    if (!nome) return;
+    const changed = viewAtual !== nome;
+    viewAtual = nome;
+
+    $$('.view').forEach(v => { v.hidden = v.dataset.view !== nome; });
+    $$('.menu-item[data-view]').forEach(m =>
+      m.classList.toggle('active', m.dataset.view === nome)
+    );
+    $$('.bottom-nav a[data-view]').forEach(a =>
+      a.classList.toggle('active', a.dataset.view === nome)
+    );
+
+    if (changed) window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    requestAnimationFrame(() => {
+      if (nome === 'geral') renderAll(periodoAtual);
+      else viewHandlers[nome]?.onShow?.();
+    });
+  }
+
+  /* ===== DADOS FILTRADOS ===== */
   function getDados(periodo = periodoAtual) {
     const base = DATASETS[periodo];
     if (!base) return null;
@@ -195,7 +225,7 @@
     return d ? d.despesa.reduce((s, v) => s + v, 0) * 1000 : 0;
   }
 
-  /* ===== MENU ===== */
+  /* ===== MENU MOBILE ===== */
   const body = document.body;
   const setMenu = (open) => {
     body.classList.toggle('menu-open', open);
@@ -207,13 +237,16 @@
   };
   $('#menuBtn')?.addEventListener('click', () => setMenu(!body.classList.contains('menu-open')));
   $('#overlay')?.addEventListener('click', () => setMenu(false));
-  $('#menu')?.addEventListener('click', e => {
-    const item = e.target.closest('.menu-item');
-    if (!item) return;
-    $$('.menu-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    setMenu(false);
+
+  /* Itens de navegação (menu + bottom-nav) */
+  $$('.menu-item[data-view], .bottom-nav a[data-view]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      setView(el.dataset.view);
+      setMenu(false);
+    });
   });
+
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   window.matchMedia('(min-width: 769px)').addEventListener('change', e => {
     if (e.matches) setMenu(false);
@@ -312,6 +345,28 @@
     requestAnimationFrame(frame);
   }
 
+  /* ===== COUNT-UP GENÉRICO ===== */
+  function animateNumber(el, to, { duration = 700, decimals = 0 } = {}) {
+    const from = parseFloat(el.dataset.current || 0);
+    const start = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const frame = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const v = from + (to - from) * ease(t);
+      el.textContent = decimals
+        ? v.toFixed(decimals).replace('.', ',')
+        : Math.round(v).toLocaleString('pt-BR');
+      if (t < 1) requestAnimationFrame(frame);
+      else {
+        el.textContent = decimals
+          ? to.toFixed(decimals).replace('.', ',')
+          : Math.round(to).toLocaleString('pt-BR');
+        el.dataset.current = to;
+      }
+    };
+    requestAnimationFrame(frame);
+  }
+
   /* ===== CURVA SUAVE ===== */
   const smoothPath = (pts) => {
     if (pts.length < 2) return '';
@@ -328,7 +383,7 @@
     return d;
   };
 
-  /* ===== GRÁFICO DE LINHA (hover + click + touch) ===== */
+  /* ===== GRÁFICO DE LINHA (Visão Geral) ===== */
   const Chart = (() => {
     const host = $('#chart');
     if (!host) return { render() {} };
@@ -444,13 +499,13 @@
       }
 
       function showTooltipAt(idx) {
-        if (!chartData) return;
         const pR = chartData.ptsR[idx];
         const pD = chartData.ptsD[idx];
         cursor.style.left = pR[0] + '%';
 
         const label = chartData.labels[idx];
-        const labelPrefix = periodoAtual === '1a' ? 'Mês' : periodoAtual === '90d' ? 'Semana' : 'Dia';
+        const labelPrefix = periodoAtual === '1a' ? 'Mês'
+                          : periodoAtual === '90d' ? 'Semana' : 'Dia';
 
         tooltip.innerHTML = `
           <div class="tt-label">${labelPrefix} ${label}</div>
@@ -483,7 +538,6 @@
         pinnedIdx = -1;
       }
 
-      // MOUSE
       hoverLayer.addEventListener('mousemove', e => {
         if (pinnedIdx !== -1) return;
         showTooltipAt(idxFromClientX(e.clientX));
@@ -492,8 +546,6 @@
         if (pinnedIdx !== -1) return;
         hideTooltip();
       });
-
-      // CLICK — fixa/desfixa
       hoverLayer.addEventListener('click', e => {
         e.stopPropagation();
         if (pinnedIdx === -1) {
@@ -506,8 +558,6 @@
           hideTooltip();
         }
       });
-
-      // TOUCH — arrasta para inspecionar
       hoverLayer.addEventListener('touchstart', e => {
         const t = e.touches[0];
         if (!t) return;
@@ -515,20 +565,14 @@
         pinnedIdx = idxFromClientX(t.clientX);
         clearTimeout(hideTimer);
       }, { passive: true });
-
       hoverLayer.addEventListener('touchmove', e => {
         const t = e.touches[0];
         if (!t) return;
-        const idx = idxFromClientX(t.clientX);
-        showTooltipAt(idx);
-        pinnedIdx = idx;
+        showTooltipAt(idxFromClientX(t.clientX));
+        pinnedIdx = idxFromClientX(t.clientX);
         clearTimeout(hideTimer);
       }, { passive: true });
-
       hoverLayer.addEventListener('touchend', () => {
-        hideTimer = setTimeout(hideTooltip, 2500);
-      });
-      hoverLayer.addEventListener('touchcancel', () => {
         hideTimer = setTimeout(hideTooltip, 2500);
       });
 
@@ -566,13 +610,18 @@
   function atualizarBadge(badgeEl, variacao, invertido) {
     const subiu = variacao > 0;
     const bom = invertido ? !subiu : subiu;
-    badgeEl.classList.remove('pos', 'neg');
+    badgeEl.classList.remove('pos', 'neg', 'up', 'down');
     badgeEl.classList.add(bom ? 'pos' : 'neg');
-    badgeEl.querySelector('.badge-icon').firstElementChild.setAttribute(
-      'd', subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'
-    );
-    badgeEl.querySelector('.badge-value').textContent =
-      Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
+    const icon = badgeEl.querySelector('.badge-icon');
+    if (icon && icon.firstElementChild) {
+      icon.firstElementChild.setAttribute(
+        'd', subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'
+      );
+    }
+    const valEl = badgeEl.querySelector('.badge-value');
+    if (valEl) {
+      valEl.textContent = Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
+    }
   }
 
   function atualizarCards() {
@@ -698,7 +747,7 @@
     host.appendChild(legend);
   };
 
-  /* ===== BARRAS VERTICAIS (hover + click + touch) ===== */
+  /* ===== BARRAS VERTICAIS ===== */
   const Bars = (id, data) => {
     const host = document.getElementById(id);
     if (!host) return;
@@ -1065,7 +1114,7 @@
     if (e.key === 'Escape') setFilterOpen(false);
   });
 
-  /* ===== RENDER ===== */
+  /* ===== RENDER (Visão Geral) ===== */
   function renderAll(periodo) {
     periodoAtual = periodo || periodoAtual;
     const d = getDados();
@@ -1081,12 +1130,17 @@
     updateGoalUI();
   }
 
+  /* ===== PERÍODO ===== */
   function setPeriodo(p) {
     if (!DATASETS[p]) return;
     periodoAtual = p;
-    $$('.range-picker .chip').forEach(c => c.classList.toggle('active', c.dataset.period === p));
-    renderAll(p);
+    $$('.range-picker .chip').forEach(c =>
+      c.classList.toggle('active', c.dataset.period === p)
+    );
+    if (viewAtual === 'geral') renderAll(p);
+    else viewHandlers[viewAtual]?.onShow?.();
   }
+
   $$('.range-picker .chip').forEach(chip => {
     chip.addEventListener('click', () => setPeriodo(chip.dataset.period));
   });
@@ -1258,7 +1312,8 @@
     if (perChanged) {
       setPeriodo(s.defaultPeriod);
     } else if (currChanged || filialChanged) {
-      renderAll(periodoAtual);
+      if (viewAtual === 'geral') renderAll(periodoAtual);
+      else viewHandlers[viewAtual]?.onShow?.();
     } else if (goalChanged) {
       updateGoalUI();
     }
@@ -1287,6 +1342,9 @@
     setPeriodo(snap.period);
     setPresentation(s.presentation);
     updateGoalUI();
+
+    /* Sincroniza UI com a view inicial */
+    setView(viewAtual);
   };
 
   if (document.readyState === 'loading') {
@@ -1295,5 +1353,24 @@
     boot();
   }
 
-  window.Dash = { renderAll, setPeriodo, formatMoney, setPresentation, updateGoalUI };
+  /* ===== API PÚBLICA ===== */
+  window.Dash = {
+    renderAll,
+    setPeriodo,
+    formatMoney,
+    setPresentation,
+    updateGoalUI,
+    // SPA
+    setView,
+    registrarView,
+    getView: () => viewAtual,
+    // helpers para outras views
+    getCurrency: currentCurrency,
+    getPeriod: () => periodoAtual,
+    getSelectedBranches,
+    FILIAIS,
+    MULT: MULTIPLICADOR,
+    animateMoney,
+    animateNumber,
+  };
 })();

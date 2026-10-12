@@ -41,11 +41,11 @@
       </svg>
       <span class="brand-name">Painel</span>
     </div>
-    <a href="#" class="menu-item active">
+    <a href="#" class="menu-item active" data-view="geral">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
       <span>Visão Geral</span>
     </a>
-    <a href="#" class="menu-item">
+    <a href="#" class="menu-item" data-view="lucros">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.7-2.5 1.8s1 1.5 2.5 1.8c1.6.4 2.5.9 2.5 2 0 1.1-1.1 1.8-2.5 1.8-1.1 0-2-.4-2.5-1.2"/><path d="M12 6v12"/></svg>
       <span>Lucros</span>
     </a>
@@ -82,27 +82,14 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></svg>
           <span class="filter-count" id="filterCount">3</span>
         </button>
-
         <div class="filter-menu" id="filterMenu" hidden>
           <div class="filter-head">
             <span class="filter-label">Filiais</span>
             <button class="filter-clear" id="filterClear">Todas</button>
           </div>
-          <label class="filter-opt">
-            <input type="checkbox" value="campinas" checked>
-            <span class="filter-check"></span>
-            <span class="filter-name">Campinas</span>
-          </label>
-          <label class="filter-opt">
-            <input type="checkbox" value="jundiai" checked>
-            <span class="filter-check"></span>
-            <span class="filter-name">Jundiaí</span>
-          </label>
-          <label class="filter-opt">
-            <input type="checkbox" value="saopaulo" checked>
-            <span class="filter-check"></span>
-            <span class="filter-name">São Paulo</span>
-          </label>
+          <label class="filter-opt"><input type="checkbox" value="campinas" checked><span class="filter-check"></span><span class="filter-name">Campinas</span></label>
+          <label class="filter-opt"><input type="checkbox" value="jundiai" checked><span class="filter-check"></span><span class="filter-name">Jundiaí</span></label>
+          <label class="filter-opt"><input type="checkbox" value="saopaulo" checked><span class="filter-check"></span><span class="filter-name">São Paulo</span></label>
         </div>
       </div>
     </div>
@@ -124,140 +111,216 @@
 
   <main class="content">
 
-    <div class="content-header" id="contentHeader">
-      <div>
-        <h1>Visão Geral</h1>
-        <p class="subtitle">Resumo financeiro · <span id="filiaisLabel">Todas as filiais</span></p>
-      </div>
-      <div class="range-picker" role="group" aria-label="Período">
-        <button class="chip" data-period="30d">30d</button>
-        <button class="chip" data-period="90d">90d</button>
-        <button class="chip active" data-period="1a">1a</button>
-      </div>
-    </div>
+    <!-- ====================================================
+         VIEW · VISÃO GERAL
+         ==================================================== -->
+    <section class="view" data-view="geral">
 
-    <section class="metrics">
-      <article class="card" id="cardReceita">
-        <header>
-          <span class="card-label">Receita do período</span>
-          <span class="card-badge pos">
-            <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
-            <span class="badge-value">12,4%</span>
-          </span>
-        </header>
-        <div class="card-value"><span class="num" data-current="0">0</span></div>
-        <footer>vs. período anterior</footer>
-      </article>
-
-      <article class="card" id="cardDespesa">
-        <header>
-          <span class="card-label">Despesa do período</span>
-          <span class="card-badge neg">
-            <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-            <span class="badge-value">3,8%</span>
-          </span>
-        </header>
-        <div class="card-value"><span class="num" data-current="0">0</span></div>
-        <footer>vs. período anterior</footer>
-      </article>
-
-      <article class="card card--goal" id="cardMeta">
-        <header>
-          <span class="card-label">Meta de receita</span>
-          <span class="card-badge" id="metaBadge" hidden>
-            <span class="badge-value" id="metaBadgeValue">0%</span>
-          </span>
-        </header>
-        <div class="goal-card-body" id="metaBody">
-          <p class="goal-empty" id="metaEmpty">Defina uma meta nas configurações</p>
-          <div class="goal-card-value" id="metaValueWrap" hidden>
-            <span class="num" id="metaValue">—</span>
-            <small id="metaSub">de —</small>
-          </div>
-          <div class="goal-card-track" id="metaTrack" hidden>
-            <div class="goal-card-fill" id="metaFill" style="width:0%"></div>
-          </div>
-          <p class="goal-card-remaining" id="metaRemaining" hidden></p>
-        </div>
-      </article>
-    </section>
-
-    <section class="panel" id="panelGrafico">
-      <header class="panel-head">
+      <div class="content-header" id="contentHeader">
         <div>
-          <h3>Receita × Despesa</h3>
-          <p class="panel-sub">Comparativo do período · passe o mouse para detalhes</p>
+          <h1>Visão Geral</h1>
+          <p class="subtitle">Resumo financeiro · <span id="filiaisLabel">Todas as filiais</span></p>
         </div>
-        <div class="legend">
-          <span data-serie="receita"><i class="dot" style="background:var(--chart-2)"></i>Receita</span>
-          <span data-serie="despesa"><i class="dot" style="background:var(--chart-1)"></i>Despesa</span>
+        <div class="range-picker" role="group" aria-label="Período">
+          <button class="chip" data-period="30d">30d</button>
+          <button class="chip" data-period="90d">90d</button>
+          <button class="chip active" data-period="1a">1a</button>
         </div>
-      </header>
-      <div class="chart" id="chart" aria-label="Gráfico de receita vs despesa"></div>
+      </div>
+
+      <section class="metrics">
+        <article class="card" id="cardReceita">
+          <header>
+            <span class="card-label">Receita do período</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">12,4%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" data-current="0">0</span></div>
+          <footer>vs. período anterior</footer>
+        </article>
+
+        <article class="card" id="cardDespesa">
+          <header>
+            <span class="card-label">Despesa do período</span>
+            <span class="card-badge neg">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              <span class="badge-value">3,8%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" data-current="0">0</span></div>
+          <footer>vs. período anterior</footer>
+        </article>
+
+        <article class="card card--goal" id="cardMeta">
+          <header>
+            <span class="card-label">Meta de receita</span>
+            <span class="card-badge" id="metaBadge" hidden>
+              <span class="badge-value" id="metaBadgeValue">0%</span>
+            </span>
+          </header>
+          <div class="goal-card-body" id="metaBody">
+            <p class="goal-empty" id="metaEmpty">Defina uma meta nas configurações</p>
+            <div class="goal-card-value" id="metaValueWrap" hidden>
+              <span class="num" id="metaValue">—</span>
+              <small id="metaSub">de —</small>
+            </div>
+            <div class="goal-card-track" id="metaTrack" hidden>
+              <div class="goal-card-fill" id="metaFill" style="width:0%"></div>
+            </div>
+            <p class="goal-card-remaining" id="metaRemaining" hidden></p>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel" id="panelGrafico">
+        <header class="panel-head">
+          <div>
+            <h3>Receita × Despesa</h3>
+            <p class="panel-sub">Comparativo do período · passe o mouse para detalhes</p>
+          </div>
+          <div class="legend">
+            <span data-serie="receita"><i class="dot" style="background:var(--chart-2)"></i>Receita</span>
+            <span data-serie="despesa"><i class="dot" style="background:var(--chart-1)"></i>Despesa</span>
+          </div>
+        </header>
+        <div class="chart" id="chart" aria-label="Gráfico de receita vs despesa"></div>
+      </section>
+
+      <section class="analytics">
+        <article class="panel panel--donut" id="panelCategorias">
+          <header class="panel-head"><div><h3>Gastos por categoria</h3><p class="panel-sub">Clique numa fatia para detalhes</p></div></header>
+          <div class="donut-host" id="donutCategorias"></div>
+        </article>
+        <article class="panel panel--donut" id="panelOrigem">
+          <header class="panel-head"><div><h3>Origem da receita</h3><p class="panel-sub">Recorrente vs. novos</p></div></header>
+          <div class="donut-host" id="donutOrigem"></div>
+        </article>
+        <article class="panel panel--bars" id="panelBarras">
+          <header class="panel-head"><div><h3>Receita no período</h3><p class="panel-sub">Valores formatados na moeda atual</p></div></header>
+          <div class="bar-host" id="barPeriodo"></div>
+        </article>
+      </section>
+
+      <section class="analytics analytics--2">
+        <article class="panel panel--stock" id="panelEstoque">
+          <header class="panel-head"><div><h3>Estoque crítico</h3><p class="panel-sub">Itens abaixo do mínimo</p></div></header>
+          <div class="stock-list" id="estoqueCritico"></div>
+        </article>
+        <article class="panel panel--top" id="panelTop">
+          <header class="panel-head"><div><h3>Top produtos</h3><p class="panel-sub">Mais vendidos no período</p></div></header>
+          <div class="top-list" id="topProdutos"></div>
+        </article>
+      </section>
+
     </section>
 
-    <section class="analytics">
-      <article class="panel panel--donut" id="panelCategorias">
-        <header class="panel-head">
-          <div>
-            <h3>Gastos por categoria</h3>
-            <p class="panel-sub">Clique numa fatia para detalhes</p>
-          </div>
-        </header>
-        <div class="donut-host" id="donutCategorias"></div>
-      </article>
+    <!-- ====================================================
+         VIEW · LUCROS
+         ==================================================== -->
+    <section class="view" data-view="lucros" hidden>
 
-      <article class="panel panel--donut" id="panelOrigem">
-        <header class="panel-head">
-          <div>
-            <h3>Origem da receita</h3>
-            <p class="panel-sub">Recorrente vs. novos</p>
-          </div>
-        </header>
-        <div class="donut-host" id="donutOrigem"></div>
-      </article>
+      <div class="content-header">
+        <div>
+          <h1>Lucros</h1>
+          <p class="subtitle">Receita, custos e margem · <span id="filiaisLabelLucros">Todas as filiais</span></p>
+        </div>
+        <div class="range-picker" role="group" aria-label="Período">
+          <button class="chip" data-period="30d">30d</button>
+          <button class="chip" data-period="90d">90d</button>
+          <button class="chip active" data-period="1a">1a</button>
+        </div>
+      </div>
 
-      <article class="panel panel--bars" id="panelBarras">
-        <header class="panel-head">
-          <div>
-            <h3>Receita no período</h3>
-            <p class="panel-sub">Valores formatados na moeda atual</p>
-          </div>
-        </header>
-        <div class="bar-host" id="barPeriodo"></div>
-      </article>
-    </section>
+      <section class="metrics metrics--4">
+        <article class="card" id="lucrosCardReceita" style="--c-rgb: 34, 197, 94">
+          <header>
+            <span class="card-label">Receita bruta</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">6,4%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" data-current="0">0</span></div>
+          <footer>vs. período anterior</footer>
+        </article>
 
-    <section class="analytics analytics--2">
-      <article class="panel panel--stock" id="panelEstoque">
-        <header class="panel-head">
-          <div>
-            <h3>Estoque crítico</h3>
-            <p class="panel-sub">Itens abaixo do mínimo</p>
-          </div>
-        </header>
-        <div class="stock-list" id="estoqueCritico"></div>
-      </article>
+        <article class="card" id="lucrosCardCustos" style="--c-rgb: 244, 63, 94">
+          <header>
+            <span class="card-label">Custos totais</span>
+            <span class="card-badge neg">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              <span class="badge-value">2,1%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" data-current="0">0</span></div>
+          <footer>vs. período anterior</footer>
+        </article>
 
-      <article class="panel panel--top" id="panelTop">
+        <article class="card" id="lucrosCardLucro" style="--c-rgb: var(--accent-rgb)">
+          <header>
+            <span class="card-label">Lucro líquido</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">8,9%</span>
+            </span>
+          </header>
+          <div class="card-value"><span class="num" data-current="0">0</span></div>
+          <footer>vs. período anterior</footer>
+        </article>
+
+        <article class="card" id="lucrosCardMargem" style="--c-rgb: var(--c-rgb-1)">
+          <header>
+            <span class="card-label">Margem líquida</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">1,7%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="lucrosMargemValor" data-current="0">0</span>
+            <small>%</small>
+          </div>
+          <footer>vs. período anterior</footer>
+        </article>
+      </section>
+
+      <section class="panel">
         <header class="panel-head">
           <div>
-            <h3>Top produtos</h3>
-            <p class="panel-sub">Mais vendidos no período</p>
+            <h3>Receita × Custos × Lucro</h3>
+            <p class="panel-sub">Evolução no período selecionado</p>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:var(--chart-1)"></i>Receita</span>
+            <span><i class="dot" style="background:var(--chart-2)"></i>Custos</span>
+            <span><i class="dot" style="background:var(--chart-3)"></i>Lucro</span>
           </div>
         </header>
-        <div class="top-list" id="topProdutos"></div>
-      </article>
+        <div class="chart" id="chartLucros" aria-label="Gráfico de lucros"></div>
+      </section>
+
+      <section class="panel">
+        <header class="panel-head">
+          <div>
+            <h3>Top produtos por lucro</h3>
+            <p class="panel-sub">Ordenado por contribuição</p>
+          </div>
+        </header>
+        <div class="profit-table" id="tabelaLucros"></div>
+      </section>
+
     </section>
 
   </main>
 
   <nav class="bottom-nav" aria-label="Navegação rápida">
-    <a href="#" class="active">
+    <a href="#" class="active" data-view="geral">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
       <span>Geral</span>
     </a>
-    <a href="#">
+    <a href="#" data-view="lucros">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v12M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.7-2.5 1.8s1 1.5 2.5 1.8c1.6.4 2.5.9 2.5 2 0 1.1-1.1 1.8-2.5 1.8-1.1 0-2-.4-2.5-1.2"/></svg>
       <span>Lucros</span>
     </a>
@@ -346,7 +409,6 @@
     </header>
 
     <div class="settings-body">
-
       <section class="settings-section">
         <div class="section-head">
           <span class="section-label">Aparência</span>
@@ -481,11 +543,11 @@
           Restaurar padrões
         </button>
       </section>
-
     </div>
   </aside>
 
   <script src="prototipo.js"></script>
   <script src="configs.js"></script>
+  <script src="profits.js"></script>
 </body>
 </html>

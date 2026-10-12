@@ -1,769 +1,420 @@
-/* profits.js
-   =========================================================
-   Página de Lucros
-   - Gráficos
-   - Tabela
-   - Contadores
-   - Relógio
-   - Menu mobile
-   - Sistema de aparência/configurações
-   ========================================================= */
-
+/* ==========================================================================
+   profits.js — View "Lucros"
+   Usa window.Dash para moeda, filiais, período e contadores.
+   ========================================================================== */
 (() => {
   'use strict';
 
-  const $ = (sel, ctx = document) => ctx.querySelector(sel);
-  const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
-
-  const body = document.body;
-
-  /* =========================================================
-     MENU MOBILE
-     ========================================================= */
-
-  function setMenu(open) {
-    body.classList.toggle('menu-open', open);
-
-    const btn = $('#menuBtn');
-
-    if (btn) {
-      btn.setAttribute('aria-expanded', String(open));
-      btn.setAttribute(
-        'aria-label',
-        open ? 'Fechar menu' : 'Abrir menu'
-      );
-    }
+  if (!window.Dash) {
+    console.error('[profits] window.Dash não disponível. Verifique a ordem dos scripts.');
+    return;
   }
 
-  const menuBtn = $('#menuBtn');
+  const Dash = window.Dash;
+  const $  = (s, c = document) => c.querySelector(s);
+  const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+  const NS = 'http://www.w3.org/2000/svg';
 
-  if (menuBtn) {
-    menuBtn.addEventListener('click', () => {
-      setMenu(!body.classList.contains('menu-open'));
-    });
-  }
-
-  const overlay = $('#overlay');
-
-  if (overlay) {
-    overlay.addEventListener('click', () => setMenu(false));
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      setMenu(false);
-      Settings.close();
-    }
-  });
-
-  window.matchMedia('(min-width: 769px)').addEventListener('change', e => {
-    if (e.matches) setMenu(false);
-  });
-
-  /* =========================================================
-     SETTINGS
-     ========================================================= */
-
-  const SETTINGS_KEY = 'dash:profits-settings:v1';
-
-  const DEFAULTS = {
-    theme: 'violeta',
-    density: 'normal',
-    reduceMotion: false,
-    hideValues: false
+  const svgEl = (tag, attrs = {}) => {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
   };
 
-  let settingsState = loadSettings();
-
-  function loadSettings() {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(SETTINGS_KEY) || '{}'
-      );
-
-      return {
-        ...DEFAULTS,
-        ...saved
-      };
-    } catch {
-      return { ...DEFAULTS };
+  const smoothPath = (pts) => {
+    if (pts.length < 2) return '';
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      d += ` C ${p1[0] + (p2[0] - p0[0]) / 6} ${p1[1] + (p2[1] - p0[1]) / 6},` +
+           ` ${p2[0] - (p3[0] - p1[0]) / 6} ${p2[1] - (p3[1] - p1[1]) / 6},` +
+           ` ${p2[0]} ${p2[1]}`;
     }
-  }
-
-  function saveSettings() {
-    try {
-      localStorage.setItem(
-        SETTINGS_KEY,
-        JSON.stringify(settingsState)
-      );
-    } catch {
-      /* localStorage pode estar indisponível */
-    }
-  }
-
-  function applySettings() {
-    const root = document.documentElement;
-
-    root.dataset.theme = settingsState.theme;
-    root.dataset.density = settingsState.density;
-    root.dataset.reduceMotion = String(settingsState.reduceMotion);
-    root.dataset.hideValues = String(settingsState.hideValues);
-
-    syncSettingsUI();
-
-    document.dispatchEvent(
-      new CustomEvent('settings:change', {
-        detail: { ...settingsState }
-      })
-    );
-
-    if (typeof Chart !== 'undefined') {
-      requestAnimationFrame(() => Chart.render());
-    }
-  }
-
-  function syncSettingsUI() {
-    $$('[data-theme-option]').forEach(card => {
-      const selected =
-        card.dataset.themeOption === settingsState.theme;
-
-      card.setAttribute('aria-checked', String(selected));
-    });
-
-    $$('[data-density-option]').forEach(button => {
-      const selected =
-        button.dataset.densityOption === settingsState.density;
-
-      button.setAttribute('aria-checked', String(selected));
-    });
-
-    const reduceMotion = $('#prefReduceMotion');
-    const hideValues = $('#prefHideValues');
-
-    if (reduceMotion) {
-      reduceMotion.checked = settingsState.reduceMotion;
-    }
-
-    if (hideValues) {
-      hideValues.checked = settingsState.hideValues;
-    }
-  }
-
-  function updateSetting(key, value) {
-    settingsState[key] = value;
-    saveSettings();
-    applySettings();
-  }
-
-  const Settings = {
-    get(key) {
-      return key
-        ? settingsState[key]
-        : { ...settingsState };
-    },
-
-    set(key, value) {
-      updateSetting(key, value);
-    },
-
-    reset() {
-      settingsState = { ...DEFAULTS };
-      saveSettings();
-      applySettings();
-    },
-
-    open() {
-      const panel = $('#settings');
-
-      if (!panel) return;
-
-      panel.classList.add('is-open');
-      body.classList.add('settings-open');
-
-      panel.setAttribute('aria-hidden', 'false');
-
-      const closeBtn = $('#settingsClose');
-
-      if (closeBtn) {
-        setTimeout(() => closeBtn.focus(), 50);
-      }
-    },
-
-    close() {
-      const panel = $('#settings');
-
-      if (!panel) return;
-
-      panel.classList.remove('is-open');
-      body.classList.remove('settings-open');
-
-      panel.setAttribute('aria-hidden', 'true');
-    },
-
-    toggle() {
-      const panel = $('#settings');
-
-      if (!panel) return;
-
-      if (panel.classList.contains('is-open')) {
-        this.close();
-      } else {
-        this.open();
-      }
-    }
+    return d;
   };
 
-  /* =========================================================
-     EVENTOS DAS CONFIGURAÇÕES
-     ========================================================= */
+  /* ===== HOST ===== */
+  const viewHost = document.querySelector('.view[data-view="lucros"]');
+  if (!viewHost) return;
 
-  const settingsBtn = $('#settingsBtn');
+  const elCardReceita = $('#lucrosCardReceita');
+  const elCardCustos  = $('#lucrosCardCustos');
+  const elCardLucro   = $('#lucrosCardLucro');
+  const elCardMargem  = $('#lucrosCardMargem');
+  const elChartHost   = $('#chartLucros');
+  const elTableHost   = $('#tabelaLucros');
+  const elFiliaisLabel = $('#filiaisLabelLucros');
 
-  if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => Settings.toggle());
+  /* ===== DATASETS ===== */
+  const DATA = {
+    '30d': {
+      labels: Array.from({ length: 30 }, (_, i) => String(i + 1)),
+      receita: [420,510,480,560,600,570,650,700,680,620,720,760,700,780,820,760,840,880,820,900,940,890,980,1020,970,1060,1100,1050,1140,1180],
+      custos:  [240,280,260,310,330,310,360,390,380,340,400,420,390,430,450,420,460,480,450,490,510,480,530,560,530,570,590,560,610,640],
+      variacaoReceita: 6.4,
+      variacaoCustos:  2.1,
+      variacaoLucro:   8.9,
+      variacaoMargem:  1.7,
+    },
+    '90d': {
+      labels: ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12'],
+      receita: [3200, 4100, 3800, 4600, 5200, 4900, 5600, 6200, 5900, 6800, 7100, 7600],
+      custos:  [1800, 2100, 2000, 2400, 2600, 2500, 2800, 3100, 3000, 3400, 3500, 3700],
+      variacaoReceita: 5.2,
+      variacaoCustos:  1.8,
+      variacaoLucro:   7.6,
+      variacaoMargem:  1.3,
+    },
+    '1a': {
+      labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+      receita: [12800, 16400, 15200, 18400, 20800, 19600, 22400, 24800, 23600, 27200, 28400, 30400],
+      custos:  [7200, 8400, 8000, 9600, 10400, 10000, 11200, 12400, 12000, 13600, 14000, 14800],
+      variacaoReceita: 6.8,
+      variacaoCustos:  2.4,
+      variacaoLucro:   9.2,
+      variacaoMargem:  1.9,
+    },
+  };
+
+  const PRODUCTS_BASE = [
+    { name: 'Plano Pro',       receita: 4100, custo: 1400 },
+    { name: 'Plano Starter',   receita: 2850, custo: 1280 },
+    { name: 'Add-on Analytics', receita: 1760, custo: 470 },
+    { name: 'Consultoria',     receita: 1250, custo: 720 },
+    { name: 'Treinamento',     receita: 790,  custo: 320 },
+  ];
+
+  const PRODUCT_SCALE = { '30d': 1, '90d': 3, '1a': 12 };
+
+  /* ===== DADOS FILTRADOS ===== */
+  function getDados() {
+    const periodo = Dash.getPeriod();
+    const base = DATA[periodo] || DATA['1a'];
+
+    const sel = Dash.getSelectedBranches();
+    const pesoR = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoReceita || 0), 0);
+    const pesoC = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoDespesa || 0), 0);
+    const mult = Dash.MULT;
+
+    return {
+      labels: base.labels,
+      receita: base.receita.map(v => v * pesoR * mult),
+      custos:  base.custos.map(v => v * pesoC * mult),
+      variacaoReceita: base.variacaoReceita,
+      variacaoCustos:  base.variacaoCustos,
+      variacaoLucro:   base.variacaoLucro,
+      variacaoMargem:  base.variacaoMargem,
+    };
   }
 
-  const settingsClose = $('#settingsClose');
+  function getProdutos() {
+    const periodo = Dash.getPeriod();
+    const scale = PRODUCT_SCALE[periodo] || 1;
 
-  if (settingsClose) {
-    settingsClose.addEventListener('click', () => Settings.close());
-  }
+    const sel = Dash.getSelectedBranches();
+    const pesoR = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoReceita || 0), 0);
+    const pesoC = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoDespesa || 0), 0);
+    const mult = Dash.MULT;
 
-  const settingsOverlay = $('#settingsOverlay');
-
-  if (settingsOverlay) {
-    settingsOverlay.addEventListener('click', () => Settings.close());
-  }
-
-  $$('[data-theme-option]').forEach(card => {
-    card.addEventListener('click', () => {
-      updateSetting('theme', card.dataset.themeOption);
-    });
-
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        updateSetting('theme', card.dataset.themeOption);
-      }
-    });
-  });
-
-  $$('[data-density-option]').forEach(button => {
-    button.addEventListener('click', () => {
-      updateSetting(
-        'density',
-        button.dataset.densityOption
-      );
-    });
-  });
-
-  const prefReduceMotion = $('#prefReduceMotion');
-
-  if (prefReduceMotion) {
-    prefReduceMotion.addEventListener('change', e => {
-      updateSetting('reduceMotion', e.target.checked);
+    return PRODUCTS_BASE.map(p => {
+      const receita = p.receita * scale * pesoR * mult;
+      const custo   = p.custo   * scale * pesoC * mult;
+      const lucro   = receita - custo;
+      const margem  = receita > 0 ? (lucro / receita) * 100 : 0;
+      return { name: p.name, receita, custo, lucro, margem };
     });
   }
 
-  const prefHideValues = $('#prefHideValues');
-
-  if (prefHideValues) {
-    prefHideValues.addEventListener('change', e => {
-      updateSetting('hideValues', e.target.checked);
-    });
+  /* ===== LABEL DE FILIAIS ===== */
+  function atualizarFiliaisLabel() {
+    if (!elFiliaisLabel) return;
+    const sel = Dash.getSelectedBranches();
+    if (sel.length === Object.keys(Dash.FILIAIS).length) {
+      elFiliaisLabel.textContent = 'Todas as filiais';
+    } else if (sel.length === 1) {
+      elFiliaisLabel.textContent = Dash.FILIAIS[sel[0]].nome;
+    } else {
+      elFiliaisLabel.textContent = sel.map(k => Dash.FILIAIS[k].nome).join(' + ');
+    }
   }
 
-  const resetSettings = $('#resetSettings');
+  /* ===== BADGE ===== */
+  function atualizarBadge(card, variacao, invertido) {
+    if (!card) return;
+    const badge = card.querySelector('.card-badge');
+    if (!badge) return;
 
-  if (resetSettings) {
-    resetSettings.addEventListener('click', () => {
-      Settings.reset();
-    });
+    const subiu = variacao > 0;
+    const bom = invertido ? !subiu : subiu;
+
+    badge.classList.remove('pos', 'neg', 'up', 'down');
+    badge.classList.add(bom ? 'pos' : 'neg');
+
+    const iconPath = badge.querySelector('.badge-icon path');
+    if (iconPath) {
+      iconPath.setAttribute('d', subiu ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6');
+    }
+    const valEl = badge.querySelector('.badge-value');
+    if (valEl) {
+      valEl.textContent = Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
+    }
   }
 
-  /* =========================================================
-     COUNT-UP
-     ========================================================= */
+  /* ===== CARDS ===== */
+  function renderCards() {
+    const d = getDados();
+    const receitaTotal = d.receita.reduce((s, v) => s + v, 0) * 1000;
+    const custosTotal  = d.custos.reduce((s, v) => s + v, 0) * 1000;
+    const lucroTotal   = receitaTotal - custosTotal;
+    const margem       = receitaTotal > 0 ? (lucroTotal / receitaTotal) * 100 : 0;
 
-  function animateNumber(
-    el,
-    to,
-    { duration = 1100, decimals = 0 } = {}
-  ) {
-    const from = 0;
-    const start = performance.now();
+    const setNum = (card, valor) => {
+      const el = card?.querySelector('.num');
+      if (el) Dash.animateMoney(el, valor);
+    };
 
-    const ease = t => 1 - Math.pow(1 - t, 3);
+    setNum(elCardReceita, receitaTotal);
+    setNum(elCardCustos, custosTotal);
+    setNum(elCardLucro, lucroTotal);
 
-    function frame(now) {
-      const t = Math.min(
-        1,
-        (now - start) / duration
-      );
-
-      const v =
-        from + (to - from) * ease(t);
-
-      el.textContent = decimals
-        ? v.toFixed(decimals).replace('.', ',')
-        : Math.round(v).toLocaleString('pt-BR');
-
-      if (t < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        el.textContent = decimals
-          ? to.toFixed(decimals).replace('.', ',')
-          : to.toLocaleString('pt-BR');
-      }
+    const elMargem = $('#lucrosMargemValor');
+    if (elMargem) {
+      Dash.animateNumber(elMargem, margem, { decimals: 1 });
     }
 
-    requestAnimationFrame(frame);
+    atualizarBadge(elCardReceita, d.variacaoReceita, false);
+    atualizarBadge(elCardCustos,  d.variacaoCustos,  true);
+    atualizarBadge(elCardLucro,   d.variacaoLucro,   false);
+    atualizarBadge(elCardMargem,  d.variacaoMargem,  false);
   }
 
-  function runCounters(root = document) {
-    $$('[data-count]', root).forEach(el => {
-      const target = parseFloat(el.dataset.count);
-
-      if (Number.isNaN(target)) return;
-
-      animateNumber(el, target, {
-        duration: settingsState.reduceMotion
-          ? 1
-          : 1000 + Math.random() * 250,
-
-        decimals: el.dataset.decimals
-          ? +el.dataset.decimals
-          : 0
-      });
-    });
-  }
-
-  /* =========================================================
-     GRÁFICO
-     ========================================================= */
-
+  /* ===== GRÁFICO ===== */
   const Chart = (() => {
-    const host = $('#chartProfits');
-
-    if (!host) {
-      return {
-        render() {}
-      };
-    }
-
-    const revenue = [
-      3200, 4100, 3800, 4600,
-      5200, 4900, 5600, 6200,
-      5900, 6800, 7100, 7600
-    ];
-
-    const costs = [
-      1800, 2100, 2000, 2400,
-      2600, 2500, 2800, 3100,
-      3000, 3400, 3500, 3700
-    ];
-
-    const profit = revenue.map(
-      (r, i) => r - costs[i]
-    );
-
-    const labels = [
-      'S1','S2','S3','S4','S5','S6',
-      'S7','S8','S9','S10','S11','S12'
-    ];
-
-    const ns =
-      'http://www.w3.org/2000/svg';
-
-    function svgEl(tag, attrs = {}) {
-      const el =
-        document.createElementNS(ns, tag);
-
-      for (const key in attrs) {
-        el.setAttribute(key, attrs[key]);
-      }
-
-      return el;
-    }
-
-    function smoothPath(points) {
-      if (points.length < 2) return '';
-
-      let d =
-        `M ${points[0][0]} ${points[0][1]}`;
-
-      for (let i = 0; i < points.length - 1; i++) {
-        const p0 =
-          points[i - 1] || points[i];
-
-        const p1 = points[i];
-        const p2 = points[i + 1];
-        const p3 =
-          points[i + 2] || p2;
-
-        const cp1x =
-          p1[0] + (p2[0] - p0[0]) / 6;
-
-        const cp1y =
-          p1[1] + (p2[1] - p0[1]) / 6;
-
-        const cp2x =
-          p2[0] - (p3[0] - p1[0]) / 6;
-
-        const cp2y =
-          p2[1] - (p3[1] - p1[1]) / 6;
-
-        d +=
-          ` C ${cp1x} ${cp1y}, ` +
-          `${cp2x} ${cp2y}, ` +
-          `${p2[0]} ${p2[1]}`;
-      }
-
-      return d;
-    }
+    if (!elChartHost) return { render() {} };
+    let chartData = null;
 
     function build() {
-      const rect =
-        host.getBoundingClientRect();
+      const data = getDados();
+      const { receita, custos, labels } = data;
+      const lucro = receita.map((r, i) => r - custos[i]);
 
-      const W = Math.max(
-        320,
-        rect.width
-      );
+      const max = Math.max(...receita, ...custos, ...lucro) * 1.12;
+      const n = receita.length;
+      const xAt = i => (i / (n - 1)) * 100;
+      const yAt = v => (1 - v / max) * 100;
 
-      const H = Math.max(
-        180,
-        rect.height
-      );
+      const ptsR = receita.map((v, i) => [xAt(i), yAt(v)]);
+      const ptsC = custos.map((v, i) => [xAt(i), yAt(v)]);
+      const ptsL = lucro.map((v, i) => [xAt(i), yAt(v)]);
 
-      const pad = {
-        t: 16,
-        r: 8,
-        b: 28,
-        l: 8
-      };
-
-      const iw =
-        W - pad.l - pad.r;
-
-      const ih =
-        H - pad.t - pad.b;
-
-      const max =
-        Math.max(
-          ...revenue,
-          ...costs,
-          ...profit
-        ) * 1.12;
-
-      const stepX =
-        iw / (revenue.length - 1);
-
-      const yFor = value =>
-        pad.t +
-        ih -
-        (value / max) * ih;
-
-      const ptsRevenue =
-        revenue.map((v, i) => [
-          pad.l + i * stepX,
-          yFor(v)
-        ]);
-
-      const ptsCosts =
-        costs.map((v, i) => [
-          pad.l + i * stepX,
-          yFor(v)
-        ]);
-
-      const ptsProfit =
-        profit.map((v, i) => [
-          pad.l + i * stepX,
-          yFor(v)
-        ]);
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-inner';
 
       const svg = svgEl('svg', {
-        viewBox: `0 0 ${W} ${H}`,
+        viewBox: '0 0 100 100',
         preserveAspectRatio: 'none',
-        'aria-hidden': 'true'
+        'aria-hidden': 'true',
       });
 
       const defs = svgEl('defs');
-
-      const grad = svgEl(
-        'linearGradient',
-        {
-          id: 'gProfit',
-          x1: '0',
-          y1: '0',
-          x2: '0',
-          y2: '1'
-        }
-      );
-
-      grad.appendChild(
-        svgEl('stop', {
-          offset: '0',
-          'stop-color': 'var(--chart-3)',
-          'stop-opacity': '.25'
-        })
-      );
-
-      grad.appendChild(
-        svgEl('stop', {
-          offset: '1',
-          'stop-color': 'var(--chart-3)',
-          'stop-opacity': '0'
-        })
-      );
-
+      const grad = svgEl('linearGradient', { id: 'gProfitArea', x1: '0', y1: '0', x2: '0', y2: '1' });
+      grad.appendChild(svgEl('stop', { offset: '0', 'stop-color': 'var(--chart-3)', 'stop-opacity': '.28' }));
+      grad.appendChild(svgEl('stop', { offset: '1', 'stop-color': 'var(--chart-3)', 'stop-opacity': '0' }));
       defs.appendChild(grad);
       svg.appendChild(defs);
 
-      /* GRID */
-
-      const gridG = svgEl('g', {
+      const grid = svgEl('g', {
         stroke: 'var(--chart-grid)',
-        'stroke-width': '1'
+        'stroke-width': '1',
+        'vector-effect': 'non-scaling-stroke',
       });
-
       for (let i = 0; i <= 4; i++) {
-        const y =
-          pad.t + (ih / 4) * i;
-
-        gridG.appendChild(
-          svgEl('line', {
-            x1: pad.l,
-            y1: y,
-            x2: W - pad.r,
-            y2: y
-          })
-        );
+        const y = (i / 4) * 100;
+        grid.appendChild(svgEl('line', { x1: '0', y1: y, x2: '100', y2: y }));
       }
+      svg.appendChild(grid);
 
-      svg.appendChild(gridG);
-
-      /* ÁREA */
-
-      const areaD =
-        smoothPath(ptsProfit) +
-        ` L ${ptsProfit.at(-1)[0]} ${pad.t + ih}` +
-        ` L ${ptsProfit[0][0]} ${pad.t + ih} Z`;
-
-      const area = svgEl('path', {
-        d: areaD,
-        fill: 'url(#gProfit)',
-        opacity: '0'
-      });
-
+      const areaD = smoothPath(ptsL) + ` L 100 100 L 0 100 Z`;
+      const area = svgEl('path', { d: areaD, fill: 'url(#gProfitArea)', opacity: '0' });
       svg.appendChild(area);
-
       requestAnimationFrame(() => {
-        area.style.transition =
-          'opacity .8s cubic-bezier(.16,1,.3,1) .25s';
-
-        area.setAttribute('opacity', '1');
-      });
-
-      /* LINHAS */
-
-      const lineRevenue = svgEl('path', {
-        d: smoothPath(ptsRevenue),
-        fill: 'none',
-        stroke: 'var(--chart-1)',
-        'stroke-width': '2',
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'vector-effect': 'non-scaling-stroke'
-      });
-
-      const lineCosts = svgEl('path', {
-        d: smoothPath(ptsCosts),
-        fill: 'none',
-        stroke: 'var(--chart-2)',
-        'stroke-width': '2',
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'vector-effect': 'non-scaling-stroke'
-      });
-
-      const lineProfit = svgEl('path', {
-        d: smoothPath(ptsProfit),
-        fill: 'none',
-        stroke: 'var(--chart-3)',
-        'stroke-width': '2',
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'vector-effect': 'non-scaling-stroke'
+        area.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1) .35s';
+        area.style.opacity = '1';
       });
 
       [
-        lineRevenue,
-        lineCosts,
-        lineProfit
-      ].forEach((line, index) => {
+        { color: 'var(--chart-1)', pts: ptsR },
+        { color: 'var(--chart-2)', pts: ptsC },
+        { color: 'var(--chart-3)', pts: ptsL },
+      ].forEach(({ color, pts }) => {
+        const line = svgEl('path', {
+          d: smoothPath(pts),
+          fill: 'none',
+          stroke: color,
+          'stroke-width': '2',
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'vector-effect': 'non-scaling-stroke',
+        });
         svg.appendChild(line);
-
-        requestAnimationFrame(() => {
-          const len =
-            line.getTotalLength();
-
-          line.style.strokeDasharray =
-            `${len}`;
-
-          line.style.strokeDashoffset =
-            `${len}`;
-
-          line.style.transition =
-            `stroke-dashoffset ` +
-            `${settingsState.reduceMotion ? '.01' : '1.4'}s ` +
-            `cubic-bezier(.16,1,.3,1) ` +
-            `${index * .15}s`;
-
-          requestAnimationFrame(() => {
-            line.style.strokeDashoffset = '0';
-          });
-        });
       });
 
-      /* PONTOS */
+      wrap.appendChild(svg);
 
-      ptsProfit.forEach((point, index) => {
-        const circle = svgEl('circle', {
-          cx: point[0],
-          cy: point[1],
-          r: '0',
-          fill: 'var(--chart-3)',
-          stroke: 'var(--bg-1)',
-          'stroke-width': '2'
-        });
-
-        svg.appendChild(circle);
-
-        circle.style.transition =
-          `r .35s cubic-bezier(.16,1,.3,1) ` +
-          `${.5 + index * .04}s`;
-
-        requestAnimationFrame(() => {
-          circle.setAttribute(
-            'r',
-            settingsState.reduceMotion
-              ? '2.8'
-              : '2.8'
-          );
-        });
+      const points = document.createElement('div');
+      points.className = 'chart-points';
+      ptsL.forEach((p, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'chart-dot';
+        dot.style.left = p[0] + '%';
+        dot.style.top  = p[1] + '%';
+        dot.style.background = 'var(--chart-3)';
+        dot.style.transitionDelay = (0.6 + i * 0.02) + 's';
+        points.appendChild(dot);
       });
+      wrap.appendChild(points);
 
-      /* LABELS */
-
-      const labelG = svgEl('g', {
-        fill: 'var(--chart-label)',
-        'font-size': '10',
-        'font-family':
-          'JetBrains Mono, monospace',
-        'text-anchor': 'middle'
+      const labelsEl = document.createElement('div');
+      labelsEl.className = 'chart-labels';
+      const mostrarTodas = labels.length <= 12;
+      const step = mostrarTodas ? 1 : Math.ceil(labels.length / 6);
+      const ultimo = labels.length - 1;
+      labels.forEach((lb, i) => {
+        if (!mostrarTodas && i % step !== 0 && i !== ultimo) return;
+        const s = document.createElement('span');
+        s.textContent = lb;
+        s.style.left = (i / ultimo) * 100 + '%';
+        labelsEl.appendChild(s);
       });
+      wrap.appendChild(labelsEl);
 
-      labels.forEach((label, index) => {
-        if (
-          index % 2 !== 0 &&
-          labels.length > 8
-        ) {
-          return;
+      const hoverLayer = document.createElement('div');
+      hoverLayer.className = 'chart-hover';
+      const cursor = document.createElement('div');
+      cursor.className = 'chart-cursor';
+      hoverLayer.appendChild(cursor);
+      wrap.appendChild(hoverLayer);
+
+      const tooltip = document.createElement('div');
+      tooltip.className = 'chart-tooltip';
+      wrap.appendChild(tooltip);
+
+      chartData = { ptsR, ptsC, ptsL, labels, n, receita, custos, lucro };
+
+      let pinnedIdx = -1;
+      let hideTimer = null;
+
+      function idxFromClientX(clientX) {
+        const rect = wrap.getBoundingClientRect();
+        const padL = 8, padR = 8;
+        const innerW = rect.width - padL - padR;
+        const x = clientX - rect.left - padL;
+        const ratio = Math.max(0, Math.min(1, x / innerW));
+        return Math.round(ratio * (chartData.n - 1));
+      }
+
+      function showTooltipAt(idx) {
+        const pL = chartData.ptsL[idx];
+        const label = chartData.labels[idx];
+        const prefix = Dash.getPeriod() === '1a' ? 'Mês' : Dash.getPeriod() === '90d' ? 'Semana' : 'Dia';
+
+        cursor.style.left = pL[0] + '%';
+
+        tooltip.innerHTML = `
+          <div class="tt-label">${prefix} ${label}</div>
+          <div class="tt-row">
+            <span><i class="tt-dot" style="background:var(--chart-1)"></i>Receita</span>
+            <span class="tt-val">${Dash.formatMoney(chartData.receita[idx] * 1000)}</span>
+          </div>
+          <div class="tt-row">
+            <span><i class="tt-dot" style="background:var(--chart-2)"></i>Custos</span>
+            <span class="tt-val">${Dash.formatMoney(chartData.custos[idx] * 1000)}</span>
+          </div>
+          <div class="tt-row">
+            <span><i class="tt-dot" style="background:var(--chart-3)"></i>Lucro</span>
+            <span class="tt-val">${Dash.formatMoney(chartData.lucro[idx] * 1000)}</span>
+          </div>
+        `;
+
+        const rect = wrap.getBoundingClientRect();
+        const padT = 16, padB = 28;
+        const topY = Math.min(chartData.ptsR[idx][1], chartData.ptsC[idx][1], chartData.ptsL[idx][1]);
+        const padTopPercent = (padT / rect.height) * 100;
+        const plotHeightPercent = 100 - padTopPercent - (padB / rect.height) * 100;
+        const topPos = padTopPercent + (topY / 100) * plotHeightPercent;
+
+        tooltip.style.left = pL[0] + '%';
+        tooltip.style.top  = topPos + '%';
+        tooltip.classList.add('is-visible');
+        hoverLayer.classList.add('is-active');
+      }
+
+      function hideTooltip() {
+        tooltip.classList.remove('is-visible');
+        hoverLayer.classList.remove('is-active');
+        pinnedIdx = -1;
+      }
+
+      hoverLayer.addEventListener('mousemove', e => {
+        if (pinnedIdx !== -1) return;
+        showTooltipAt(idxFromClientX(e.clientX));
+      });
+      hoverLayer.addEventListener('mouseleave', () => {
+        if (pinnedIdx !== -1) return;
+        hideTooltip();
+      });
+      hoverLayer.addEventListener('click', e => {
+        e.stopPropagation();
+        if (pinnedIdx === -1) {
+          const idx = idxFromClientX(e.clientX);
+          showTooltipAt(idx);
+          pinnedIdx = idx;
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(hideTooltip, 5000);
+        } else {
+          hideTooltip();
         }
-
-        const text = svgEl('text', {
-          x: pad.l + index * stepX,
-          y: H - 8
-        });
-
-        text.textContent = label;
-        labelG.appendChild(text);
+      });
+      hoverLayer.addEventListener('touchstart', e => {
+        const t = e.touches[0];
+        if (!t) return;
+        showTooltipAt(idxFromClientX(t.clientX));
+        pinnedIdx = idxFromClientX(t.clientX);
+        clearTimeout(hideTimer);
+      }, { passive: true });
+      hoverLayer.addEventListener('touchmove', e => {
+        const t = e.touches[0];
+        if (!t) return;
+        showTooltipAt(idxFromClientX(t.clientX));
+        pinnedIdx = idxFromClientX(t.clientX);
+        clearTimeout(hideTimer);
+      }, { passive: true });
+      hoverLayer.addEventListener('touchend', () => {
+        hideTimer = setTimeout(hideTooltip, 2500);
       });
 
-      svg.appendChild(labelG);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => wrap.classList.add('is-ready'));
+      });
 
-      return svg;
+      return wrap;
     }
 
     function render() {
-      host.innerHTML = '';
-      host.appendChild(build());
+      elChartHost.innerHTML = '';
+      elChartHost.appendChild(build());
     }
 
-    let rafId = null;
-
-    const ro =
-      new ResizeObserver(() => {
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-        }
-
-        rafId =
-          requestAnimationFrame(render);
-      });
-
-    ro.observe(host);
-
-    return {
-      render
-    };
+    return { render };
   })();
 
-  /* =========================================================
-     TABELA
-     ========================================================= */
-
-  const products = [
-    {
-      name: 'Plano Pro',
-      revenue: 18400,
-      cost: 6200,
-      margin: 66.3
-    },
-    {
-      name: 'Plano Starter',
-      revenue: 12800,
-      cost: 5800,
-      margin: 54.7
-    },
-    {
-      name: 'Add-on Analytics',
-      revenue: 7900,
-      cost: 2100,
-      margin: 73.4
-    },
-    {
-      name: 'Consultoria',
-      revenue: 5600,
-      cost: 3200,
-      margin: 42.9
-    },
-    {
-      name: 'Treinamento',
-      revenue: 3530,
-      cost: 1440,
-      margin: 59.2
-    }
-  ];
-
-  function renderProfitTable() {
-    const host = $('#profitTable');
-
-    if (!host) return;
-
-    const maxProfit =
-      Math.max(
-        ...products.map(
-          product =>
-            product.revenue - product.cost
-        )
-      );
-
-    const fmtBRL =
-      value =>
-        'R$ ' +
-        value.toLocaleString('pt-BR');
+  /* ===== TABELA ===== */
+  function renderTable() {
+    if (!elTableHost) return;
+    const produtos = getProdutos();
 
     const head = `
       <div class="profit-row profit-head">
@@ -774,117 +425,34 @@
       </div>
     `;
 
-    const rows =
-      products.map(product => {
-        const profit =
-          product.revenue -
-          product.cost;
+    const rows = produtos.map(p => `
+      <div class="profit-row">
+        <span class="profit-name">${p.name}</span>
+        <span class="num">${Dash.formatMoney(p.receita)}</span>
+        <span class="num positive">${Dash.formatMoney(p.lucro)}</span>
+        <span class="num">${p.margem.toFixed(1).replace('.', ',')}%</span>
+      </div>
+    `).join('');
 
-        return `
-          <div class="profit-row">
-            <span class="profit-name">
-              ${product.name}
-            </span>
-
-            <span class="num">
-              ${fmtBRL(product.revenue)}
-            </span>
-
-            <span class="num positive">
-              ${fmtBRL(profit)}
-            </span>
-
-            <span class="num">
-              ${product.margin
-                .toFixed(1)
-                .replace('.', ',')}%
-            </span>
-          </div>
-        `;
-      }).join('');
-
-    host.innerHTML =
-      head + rows;
+    elTableHost.innerHTML = head + rows;
   }
 
-  /* =========================================================
-     RELÓGIO
-     ========================================================= */
-
-  function startClock() {
-    const el = $('#clock');
-
-    if (!el) return;
-
-    const formatter =
-      new Intl.DateTimeFormat(
-        'pt-BR',
-        {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      );
-
-    const tick = () => {
-      el.textContent =
-        formatter.format(new Date());
-    };
-
-    tick();
-
-    setInterval(
-      tick,
-      30_000
-    );
+  /* ===== RENDER GERAL ===== */
+  function renderAll() {
+    atualizarFiliaisLabel();
+    renderCards();
+    Chart.render();
+    renderTable();
   }
 
-  /* =========================================================
-     BOOT
-     ========================================================= */
+  /* ===== REGISTRO NA SPA ===== */
+  Dash.registrarView('lucros', { onShow: renderAll });
 
-  function boot() {
-    applySettings();
-    runCounters();
-    startClock();
-    renderProfitTable();
+  /* Se por acaso já estiver aberta (raro) */
+  if (Dash.getView() === 'lucros') renderAll();
 
-    requestAnimationFrame(() => {
-      Chart.render();
-    });
-  }
-
-  if (
-    document.readyState === 'loading'
-  ) {
-    document.addEventListener(
-      'DOMContentLoaded',
-      boot
-    );
-  } else {
-    boot();
-  }
-
-  /* =========================================================
-     API PÚBLICA
-     ========================================================= */
-
-  window.Profits = {
-    animateNumber,
-    runCounters,
-    chart: Chart,
-
-    table: {
-      render: renderProfitTable
-    },
-
-    menu: {
-      set: setMenu,
-      close: () => setMenu(false)
-    },
-
-    settings: Settings
-  };
+  /* Re-render quando settings mudar (moeda, filiais) enquanto a view está visível */
+  document.addEventListener('settings:change', () => {
+    if (Dash.getView() === 'lucros') renderAll();
+  });
 })();

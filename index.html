@@ -49,7 +49,7 @@
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.7-2.5 1.8s1 1.5 2.5 1.8c1.6.4 2.5.9 2.5 2 0 1.1-1.1 1.8-2.5 1.8-1.1 0-2-.4-2.5-1.2"/><path d="M12 6v12"/></svg>
       <span>Lucros</span>
     </a>
-    <a href="#" class="menu-item">
+        <a href="#" class="menu-item" data-view="demanda">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
       <span>Demanda</span>
     </a>
@@ -373,6 +373,157 @@
 
     </section>
 
+        <!-- ====================================================
+         VIEW · DEMANDA
+         ==================================================== -->
+    <section class="view" data-view="demanda" hidden>
+
+      <div class="content-header">
+        <div>
+          <h1>Demanda</h1>
+          <p class="subtitle">Volume de pedidos e assinaturas · <span id="filiaisLabelDemanda">Todas as filiais</span></p>
+        </div>
+        <div class="range-picker" role="group" aria-label="Período">
+          <button class="chip" data-period="30d">30d</button>
+          <button class="chip" data-period="90d">90d</button>
+          <button class="chip active" data-period="1a">1a</button>
+        </div>
+      </div>
+
+      <section class="metrics metrics--4">
+
+        <article class="card" id="demandaCardPedidos" style="--c-rgb: var(--c-rgb-1)">
+          <header>
+            <span class="card-label">Pedidos totais</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="demandaPedidosValor" data-current="0">0</span>
+          </div>
+          <footer>unidades no período</footer>
+        </article>
+
+        <article class="card" id="demandaCardAssinaturas" style="--c-rgb: 34, 197, 94">
+          <header>
+            <span class="card-label">Novas assinaturas</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="demandaAssinaturasValor" data-current="0">0</span>
+          </div>
+          <footer>novos contratos</footer>
+        </article>
+
+        <article class="card card--percent" id="demandaCardConversao" style="--c-rgb: var(--accent-rgb)">
+          <header>
+            <span class="card-label">Taxa de conversão</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="demandaConversaoValor" data-current="0">0</span>
+            <small>%</small>
+          </div>
+          <footer>leads → clientes</footer>
+        </article>
+
+        <article class="card" id="demandaCardTicket" style="--c-rgb: var(--c-rgb-2)">
+          <header>
+            <span class="card-label">Ticket médio</span>
+            <span class="card-badge pos">
+              <svg class="badge-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+              <span class="badge-value">0%</span>
+            </span>
+          </header>
+          <div class="card-value">
+            <span class="num" id="demandaTicketValor" data-current="0">0</span>
+          </div>
+          <footer>por pedido</footer>
+        </article>
+
+      </section>
+
+      <section class="panel">
+        <header class="panel-head">
+          <div>
+            <h3>Pedidos × Meta</h3>
+            <p class="panel-sub">Volume realizado vs. objetivo · passe o mouse para detalhes</p>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:var(--chart-2)"></i>Pedidos</span>
+            <span><i class="dot" style="background:var(--chart-1)"></i>Meta</span>
+          </div>
+        </header>
+        <div class="chart" id="chartDemanda" aria-label="Gráfico de pedidos vs meta"></div>
+      </section>
+
+      <section class="analytics">
+
+        <article class="panel panel--donut">
+          <header class="panel-head">
+            <div>
+              <h3>Origem dos pedidos</h3>
+              <p class="panel-sub">Clique numa fatia para detalhes</p>
+            </div>
+          </header>
+          <div class="donut-host" id="donutOrigemDemanda"></div>
+        </article>
+
+        <article class="panel panel--donut">
+          <header class="panel-head">
+            <div>
+              <h3>Tipo de demanda</h3>
+              <p class="panel-sub">Novo · Renovação · Upsell</p>
+            </div>
+          </header>
+          <div class="donut-host" id="donutTipoDemanda"></div>
+        </article>
+
+        <article class="panel panel--bars">
+          <header class="panel-head">
+            <div>
+              <h3>Pedidos por categoria</h3>
+              <p class="panel-sub">Hardware · Software · Serviços</p>
+            </div>
+          </header>
+          <div class="bar-host" id="barCategoriaDemanda"></div>
+        </article>
+
+      </section>
+
+      <section class="analytics analytics--2">
+
+        <article class="panel">
+          <header class="panel-head">
+            <div>
+              <h3>Demanda por filial</h3>
+              <p class="panel-sub">Distribuição do volume</p>
+            </div>
+          </header>
+          <div class="margin-list" id="demandaFiliais"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div>
+              <h3>Top produtos por volume</h3>
+              <p class="panel-sub">Mais pedidos no período</p>
+            </div>
+          </header>
+          <div class="profit-table" id="tabelaDemanda"></div>
+        </article>
+
+      </section>
+
+    </section>
   </main>
 
   <nav class="bottom-nav" aria-label="Navegação rápida">
@@ -384,7 +535,7 @@
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v12M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.7-2.5 1.8s1 1.5 2.5 1.8c1.6.4 2.5.9 2.5 2 0 1.1-1.1 1.8-2.5 1.8-1.1 0-2-.4-2.5-1.2"/></svg>
       <span>Lucros</span>
     </a>
-    <a href="#">
+    <a href="#" data-view="demanda">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
       <span>Demanda</span>
     </a>
@@ -609,5 +760,6 @@
   <script src="prototipo.js"></script>
   <script src="configs.js"></script>
   <script src="profits.js"></script>
+  <script src="demanda.js"></script>
 </body>
 </html>

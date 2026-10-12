@@ -1,12 +1,12 @@
 /* ==========================================================================
    profits.js — View "Lucros"
-   Consome window.Dash para moeda, filiais, período, contadores e settings.
+   Consome a MESMA base da Visão Geral via Dash.getDataset().
    ========================================================================== */
 (() => {
   'use strict';
 
   if (!window.Dash) {
-    console.error('[profits] window.Dash não existe. Verifique a ordem dos scripts (prototipo.js antes de profits.js).');
+    console.error('[profits] window.Dash não existe. Verifique a ordem dos scripts.');
     return;
   }
 
@@ -36,7 +36,6 @@
     return d;
   };
 
-  /* ===== HOSTS ===== */
   const viewHost = $('.view[data-view="lucros"]');
   if (!viewHost) return;
 
@@ -46,129 +45,88 @@
   const elCardMargem  = $('#lucrosCardMargem');
   const elMargemVal   = $('#lucrosMargemValor');
   const elChartHost   = $('#chartLucros');
+  const elDonutMix    = $('#donutMixReceita');
   const elDonutCustos = $('#donutCustosLucros');
   const elDonutOrigem = $('#donutOrigemLucros');
   const elBarHost     = $('#barLucros');
+  const elMargemList  = $('#margemCategorias');
   const elTableHost   = $('#tabelaLucros');
   const elFiliaisLbl  = $('#filiaisLabelLucros');
 
-  /* ===== DADOS BASE (milhares) ===== */
-  const DATA = {
-    '30d': {
-      labels: Array.from({ length: 30 }, (_, i) => String(i + 1)),
-      receita: [14,16,13,18,17,20,19,21,23,20,24,22,25,23,21,26,24,27,25,23,28,26,27,25,29,28,26,30,29,31],
-      custos:  [8,9,7,10,9,11,10,12,13,11,14,12,15,13,12,15,14,16,15,13,16,15,16,14,17,16,15,17,16,18],
-      variacaoReceita: 6.4,
-      variacaoCustos:  2.1,
-      variacaoLucro:   9.8,
-      variacaoMargem:  1.7,
-      custosCategorias: [
-        { label: 'Marketing',      value: 32, color: '--chart-1' },
-        { label: 'Operacional',    value: 28, color: '--chart-2' },
-        { label: 'Salários',       value: 26, color: '--chart-3' },
-        { label: 'Infraestrutura', value: 14, color: '--chart-4' },
-      ],
-      origemLucro: [
-        { label: 'Recorrente', value: 62, color: '--chart-2' },
-        { label: 'Novos',      value: 38, color: '--chart-1' },
-      ],
-    },
-    '90d': {
-      labels: ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12'],
-      receita: [42, 48, 55, 52, 60, 68, 65, 72, 78, 74, 82, 88],
-      custos:  [22, 25, 30, 28, 32, 36, 34, 38, 42, 40, 44, 48],
-      variacaoReceita: 12.6,
-      variacaoCustos:  4.2,
-      variacaoLucro:   18.3,
-      variacaoMargem:  3.1,
-      custosCategorias: [
-        { label: 'Marketing',      value: 28, color: '--chart-1' },
-        { label: 'Operacional',    value: 30, color: '--chart-2' },
-        { label: 'Salários',       value: 27, color: '--chart-3' },
-        { label: 'Infraestrutura', value: 15, color: '--chart-4' },
-      ],
-      origemLucro: [
-        { label: 'Recorrente', value: 65, color: '--chart-2' },
-        { label: 'Novos',      value: 35, color: '--chart-1' },
-      ],
-    },
-    '1a': {
-      labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-      receita: [128, 164, 152, 184, 208, 196, 224, 248, 236, 272, 284, 304],
-      custos:  [72,  84,  80,  96,  104, 100, 112, 124, 120, 136, 140, 148],
-      variacaoReceita: 18.4,
-      variacaoCustos:  6.1,
-      variacaoLucro:   26.7,
-      variacaoMargem:  4.2,
-      custosCategorias: [
-        { label: 'Marketing',      value: 35, color: '--chart-1' },
-        { label: 'Operacional',    value: 30, color: '--chart-2' },
-        { label: 'Salários',       value: 20, color: '--chart-3' },
-        { label: 'Infraestrutura', value: 15, color: '--chart-4' },
-      ],
-      origemLucro: [
-        { label: 'Recorrente', value: 68, color: '--chart-2' },
-        { label: 'Novos',      value: 32, color: '--chart-1' },
-      ],
-    },
-  };
-
-  const PRODUCTS_BASE = [
-    { name: 'Plano Pro',        receita: 410, custo: 140 },
-    { name: 'Plano Starter',    receita: 285, custo: 128 },
-    { name: 'Add-on Analytics', receita: 176, custo: 47  },
-    { name: 'Consultoria',      receita: 125, custo: 72  },
-    { name: 'Treinamento',      receita: 79,  custo: 32  },
+  /* ===== MIX DE PRODUTOS =====
+     share = fração da receita total do período.
+     cmv   = custo da mercadoria/serviço como fração da receita daquele item.
+     Somatório de `share` = 1 (garante que soma dos produtos = receita total).
+  */
+  const PRODUTOS = [
+    // Hardware
+    { name: 'Notebook Pro 15',    tipo: 'hw', share: 0.0775, cmv: 0.375 },
+    { name: 'Monitor 27"',        tipo: 'hw', share: 0.0581, cmv: 0.4375 },
+    { name: 'Teclado Mecânico',   tipo: 'hw', share: 0.0472, cmv: 0.3333 },
+    { name: 'Headset Bluetooth',  tipo: 'hw', share: 0.0327, cmv: 0.4074 },
+    { name: 'Mouse Ergo',         tipo: 'hw', share: 0.0206, cmv: 0.3529 },
+    // Software · mensalidades
+    { name: 'Plano Enterprise',   tipo: 'sw', share: 0.2542, cmv: 0.20 },
+    { name: 'Plano Pro',          tipo: 'sw', share: 0.1598, cmv: 0.25 },
+    { name: 'Plano Starter',      tipo: 'sw', share: 0.0871, cmv: 0.2917 },
+    { name: 'Add-on Analytics',   tipo: 'sw', share: 0.0581, cmv: 0.1875 },
+    { name: 'Add-on Suporte 24/7',tipo: 'sw', share: 0.0363, cmv: 0.40 },
+    // Serviços
+    { name: 'Consultoria',        tipo: 'sv', share: 0.1090, cmv: 0.40 },
+    { name: 'Treinamento',        tipo: 'sv', share: 0.0594, cmv: 0.3265 },
   ];
 
-  const PRODUCT_SCALE = { '30d': 1, '90d': 3, '1a': 12 };
+  /* ===== CATEGORIAS DE CUSTO (mesmas da Visão Geral) ===== */
+  const CUSTOS_MIX = [
+    { label: 'Marketing',      pct: 0.35, color: '--chart-1' },
+    { label: 'Operacional',    pct: 0.30, color: '--chart-2' },
+    { label: 'Salários',       pct: 0.20, color: '--chart-3' },
+    { label: 'Infraestrutura', pct: 0.15, color: '--chart-4' },
+  ];
 
-  /* ===== DADOS FILTRADOS ===== */
-  function getDados() {
-    const periodo = Dash.getPeriod();
-    const base = DATA[periodo] || DATA['1a'];
+  const ORIGEM_MIX = [
+    { label: 'Recorrente', pct: 0.60, color: '--chart-2' },
+    { label: 'Pontual',    pct: 0.40, color: '--chart-1' },
+  ];
 
-    const sel = Dash.getSelectedBranches();
-    const pesoR = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoReceita || 0), 0);
-    const pesoC = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoDespesa || 0), 0);
-    const mult = Dash.MULT;
+  const TIPO_INFO = {
+    hw: { nome: 'Hardware', cor: 'var(--accent-2)',       classe: 'profit-badge--hw', tone: 'tone-hw' },
+    sw: { nome: 'Software', cor: 'var(--pos)',            classe: 'profit-badge--sw', tone: 'tone-sw' },
+    sv: { nome: 'Serviço',  cor: '#f472b6',               classe: 'profit-badge--sv', tone: 'tone-sv' },
+  };
 
-    const receita = base.receita.map(v => v * pesoR * mult);
-    const custos  = base.custos.map(v => v * pesoC * mult);
-    const lucro   = receita.map((r, i) => r - custos[i]);
-
+  /* ===== FONTE DE DADOS ===== */
+  function getDataset() {
+    const d = Dash.getDataset();
+    if (!d) return null;
     return {
-      labels: base.labels,
-      receita,
-      custos,
-      lucro,
-      variacaoReceita: base.variacaoReceita,
-      variacaoCustos:  base.variacaoCustos,
-      variacaoLucro:   base.variacaoLucro,
-      variacaoMargem:  base.variacaoMargem,
-      custosCategorias: base.custosCategorias,
-      origemLucro: base.origemLucro,
+      labels: d.labels,
+      receita: d.receita,                 // já filtrado por filial + período
+      custos: d.despesa,                  // despesa da Visão Geral = custo aqui
+      lucro: d.receita.map((r, i) => r - d.despesa[i]),
+      variacaoReceita: d.variacaoReceita,
+      variacaoCustos:  d.variacaoDespesa,
+      // margem/lucro usam a mesma base, mantemos os deltas existentes
+      variacaoLucro:  d.variacaoReceita - d.variacaoDespesa + 1.2,
+      variacaoMargem: d.variacaoReceita * 0.15,
     };
   }
 
   function getProdutos() {
-    const periodo = Dash.getPeriod();
-    const scale = PRODUCT_SCALE[periodo] || 1;
-    const sel = Dash.getSelectedBranches();
-    const pesoR = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoReceita || 0), 0);
-    const pesoC = sel.reduce((s, k) => s + (Dash.FILIAIS[k]?.pesoDespesa || 0), 0);
-    const mult = Dash.MULT;
+    const d = getDataset();
+    if (!d) return [];
+    const receitaTotal = d.receita.reduce((s, v) => s + v, 0); // milhares
 
-    return PRODUCTS_BASE.map(p => {
-      const receita = p.receita * scale * pesoR * mult * 1000;
-      const custo   = p.custo   * scale * pesoC * mult * 1000;
+    return PRODUTOS.map(p => {
+      const receita = receitaTotal * p.share * 1000;   // R$
+      const custo   = receita * p.cmv;
       const lucro   = receita - custo;
       const margem  = receita > 0 ? (lucro / receita) * 100 : 0;
-      return { name: p.name, receita, custo, lucro, margem };
+      return { name: p.name, tipo: p.tipo, receita, custo, lucro, margem };
     });
   }
 
-  /* ===== AGREGAÇÃO DE LUCRO PARA AS BARRAS ===== */
+  /* ===== AGREGAÇÃO DE LUCRO (barras) ===== */
   function aggregateLucro(lucro) {
     const p = Dash.getPeriod();
 
@@ -178,36 +136,24 @@
       const out = [];
       for (let g = 0; g < groups; g++) {
         const slice = lucro.slice(g * size, (g + 1) * size);
-        out.push({
-          label: `S${g + 1}`,
-          value: slice.reduce((s, v) => s + v, 0),
-        });
+        out.push({ label: `S${g + 1}`, value: slice.reduce((s, v) => s + v, 0) });
       }
       return out;
     }
-
     if (p === '90d') {
       const groups = 3;
       const size = Math.ceil(lucro.length / groups);
       const out = [];
       for (let g = 0; g < groups; g++) {
         const slice = lucro.slice(g * size, (g + 1) * size);
-        out.push({
-          label: `Mês ${g + 1}`,
-          value: slice.reduce((s, v) => s + v, 0),
-        });
+        out.push({ label: `Mês ${g + 1}`, value: slice.reduce((s, v) => s + v, 0) });
       }
       return out;
     }
-
-    // 1a → 4 trimestres
     const out = [];
     for (let g = 0; g < 4; g++) {
       const slice = lucro.slice(g * 3, (g + 1) * 3);
-      out.push({
-        label: `Q${g + 1}`,
-        value: slice.reduce((s, v) => s + v, 0),
-      });
+      out.push({ label: `Q${g + 1}`, value: slice.reduce((s, v) => s + v, 0) });
     }
     return out;
   }
@@ -231,7 +177,7 @@
     const subiu = variacao > 0;
     const bom = invertido ? !subiu : subiu;
 
-    badge.classList.remove('pos', 'neg', 'up', 'down');
+    badge.classList.remove('pos', 'neg');
     badge.classList.add(bom ? 'pos' : 'neg');
 
     const icon = badge.querySelector('.badge-icon path');
@@ -243,7 +189,9 @@
 
   /* ===== CARDS ===== */
   function renderCards() {
-    const d = getDados();
+    const d = getDataset();
+    if (!d) return;
+
     const receitaTotal = d.receita.reduce((s, v) => s + v, 0) * 1000;
     const custosTotal  = d.custos.reduce((s, v) => s + v, 0) * 1000;
     const lucroTotal   = receitaTotal - custosTotal;
@@ -257,7 +205,6 @@
     setNum(elCardReceita, receitaTotal);
     setNum(elCardCustos, custosTotal);
     setNum(elCardLucro, lucroTotal);
-
     if (elMargemVal) Dash.animateNumber(elMargemVal, margem, { decimals: 1 });
 
     atualizarBadge(elCardReceita, d.variacaoReceita, false);
@@ -272,9 +219,10 @@
     let chartData = null;
 
     function build() {
-      const data = getDados();
-      const { receita, custos, lucro, labels } = data;
+      const data = getDataset();
+      if (!data) return document.createElement('div');
 
+      const { receita, custos, lucro, labels } = data;
       const max = Math.max(...receita, ...custos, ...lucro) * 1.12;
       const n = receita.length;
       const xAt = i => (i / (n - 1)) * 100;
@@ -301,8 +249,7 @@
       svg.appendChild(defs);
 
       const grid = svgEl('g', {
-        stroke: 'var(--chart-grid)',
-        'stroke-width': '1',
+        stroke: 'var(--chart-grid)', 'stroke-width': '1',
         'vector-effect': 'non-scaling-stroke',
       });
       for (let i = 0; i <= 4; i++) {
@@ -412,11 +359,7 @@
 
         const rect = wrap.getBoundingClientRect();
         const padT = 16, padB = 28;
-        const topY = Math.min(
-          chartData.ptsR[idx][1],
-          chartData.ptsC[idx][1],
-          chartData.ptsL[idx][1]
-        );
+        const topY = Math.min(chartData.ptsR[idx][1], chartData.ptsC[idx][1], chartData.ptsL[idx][1]);
         const padTopPercent = (padT / rect.height) * 100;
         const plotHeightPercent = 100 - padTopPercent - (padB / rect.height) * 100;
         const topPos = padTopPercent + (topY / 100) * plotHeightPercent;
@@ -449,9 +392,7 @@
           pinnedIdx = idx;
           clearTimeout(hideTimer);
           hideTimer = setTimeout(hideTooltip, 5000);
-        } else {
-          hideTooltip();
-        }
+        } else hideTooltip();
       });
       hoverLayer.addEventListener('touchstart', e => {
         const t = e.touches[0];
@@ -592,7 +533,7 @@
     host.appendChild(legend);
   }
 
-  /* ===== BARRAS VERTICAIS ===== */
+  /* ===== BARRAS ===== */
   function Bars(host, data) {
     if (!host) return;
 
@@ -700,7 +641,6 @@
       tooltip.style.top = zone.dataset.tipTop;
       tooltip.classList.add('is-visible');
     }
-
     function hideTooltip() {
       tooltip.classList.remove('is-visible');
       pinnedIdx = -1;
@@ -719,9 +659,8 @@
       zone.addEventListener('click', e => {
         e.stopPropagation();
         const idx = +zone.dataset.idx;
-        if (pinnedIdx === idx) {
-          hideTooltip();
-        } else {
+        if (pinnedIdx === idx) hideTooltip();
+        else {
           hideTooltip();
           showTooltipFor(zone);
           zone.classList.add('is-active');
@@ -746,28 +685,75 @@
     host.appendChild(wrap);
   }
 
-  /* ===== TABELA ===== */
+  /* ===== MARGEM POR CATEGORIA ===== */
+  function renderMargens() {
+    if (!elMargemList) return;
+    const produtos = getProdutos();
+
+    const grupos = { hw: [], sw: [], sv: [] };
+    produtos.forEach(p => grupos[p.tipo].push(p));
+
+    const linhas = Object.entries(grupos).map(([tipo, itens]) => {
+      const receita = itens.reduce((s, p) => s + p.receita, 0);
+      const lucro   = itens.reduce((s, p) => s + p.lucro, 0);
+      const margem  = receita > 0 ? (lucro / receita) * 100 : 0;
+      return { tipo, receita, lucro, margem };
+    });
+
+    elMargemList.innerHTML = linhas.map(l => {
+      const info = TIPO_INFO[l.tipo];
+      return `
+        <div class="margin-item">
+          <div class="margin-head">
+            <span class="margin-label">${info.nome}</span>
+            <span class="margin-value">${l.margem.toFixed(1).replace('.', ',')}%<small>${Dash.formatMoney(l.lucro)}</small></span>
+          </div>
+          <div class="margin-track">
+            <div class="margin-fill ${info.tone}" style="width:0%" data-w="${l.margem}"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        elMargemList.querySelectorAll('.margin-fill').forEach(el => {
+          el.style.width = el.dataset.w + '%';
+        });
+      });
+    });
+  }
+
+  /* ===== TABELA DE PRODUTOS ===== */
   function renderTable() {
     if (!elTableHost) return;
-    const produtos = getProdutos();
+    const produtos = [...getProdutos()].sort((a, b) => b.lucro - a.lucro);
 
     const head = `
       <div class="profit-row profit-head">
-        <span>Produto</span>
+        <span>Produto / Serviço</span>
+        <span>Tipo</span>
         <span class="num">Receita</span>
         <span class="num">Lucro</span>
         <span class="num pct">Margem</span>
       </div>
     `;
 
-    const rows = produtos.map(p => `
-      <div class="profit-row">
-        <span class="profit-name">${p.name}</span>
-        <span class="num">${Dash.formatMoney(p.receita)}</span>
-        <span class="num positive">${Dash.formatMoney(p.lucro)}</span>
-        <span class="num pct">${p.margem.toFixed(1).replace('.', ',')}%</span>
-      </div>
-    `).join('');
+    const rows = produtos.map(p => {
+      const info = TIPO_INFO[p.tipo];
+      return `
+        <div class="profit-row">
+          <span class="profit-name">
+            <span class="profit-dot" style="background:${info.cor}"></span>
+            ${p.name}
+          </span>
+          <span><span class="profit-badge ${info.classe}">${info.nome}</span></span>
+          <span class="num">${Dash.formatMoney(p.receita)}</span>
+          <span class="num positive">${Dash.formatMoney(p.lucro)}</span>
+          <span class="num pct">${p.margem.toFixed(1).replace('.', ',')}%</span>
+        </div>
+      `;
+    }).join('');
 
     elTableHost.innerHTML = head + rows;
   }
@@ -777,28 +763,51 @@
     atualizarFiliaisLabel();
     renderCards();
 
-    const d = getDados();
-    const custosTotal = d.custos.reduce((s, v) => s + v, 0) * 1000;
-    const lucroTotal = d.lucro.reduce((s, v) => s + v, 0) * 1000;
+    const d = getDataset();
+    if (!d) return;
+    const receitaTotal = d.receita.reduce((s, v) => s + v, 0) * 1000;
+    const custosTotal  = d.custos.reduce((s, v) => s + v, 0) * 1000;
+    const lucroTotal   = receitaTotal - custosTotal;
 
     Chart.render();
-    Donut(elDonutCustos, d.custosCategorias, custosTotal);
-    Donut(elDonutOrigem, d.origemLucro, lucroTotal);
 
+    // Mix de receita (Hardware / Software / Serviços)
+    const produtos = getProdutos();
+    const mixMap = { hw: 0, sw: 0, sv: 0 };
+    produtos.forEach(p => { mixMap[p.tipo] += p.receita; });
+    const mixData = [
+      { label: 'Software',  value: mixMap.sw, color: '--chart-2' },
+      { label: 'Hardware',  value: mixMap.hw, color: '--chart-1' },
+      { label: 'Serviços',  value: mixMap.sv, color: '--chart-3' },
+    ];
+    Donut(elDonutMix, mixData, receitaTotal);
+
+    // Custos por categoria (mesmas proporções da Visão Geral)
+    const custosData = CUSTOS_MIX.map(c => ({
+      label: c.label,
+      value: Math.round(c.pct * 100),
+      color: c.color,
+    }));
+    Donut(elDonutCustos, custosData, custosTotal);
+
+    // Origem do lucro
+    const origemData = ORIGEM_MIX.map(o => ({
+      label: o.label,
+      value: Math.round(o.pct * 100),
+      color: o.color,
+    }));
+    Donut(elDonutOrigem, origemData, lucroTotal);
+
+    // Barras de lucro
     Bars(elBarHost, aggregateLucro(d.lucro));
 
+    renderMargens();
     renderTable();
   }
 
-  /* ===== REGISTRO NA SPA ===== */
   Dash.registrarView('lucros', { onShow: renderAll });
+  if (Dash.getView() === 'lucros') requestAnimationFrame(renderAll);
 
-  /* Se por algum motivo já estiver visível ao carregar, renderiza */
-  if (Dash.getView() === 'lucros') {
-    requestAnimationFrame(renderAll);
-  }
-
-  /* Re-render quando settings mudar enquanto essa view está aberta */
   document.addEventListener('settings:change', () => {
     if (Dash.getView() === 'lucros') renderAll();
   });

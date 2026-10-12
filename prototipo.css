@@ -1352,3 +1352,156 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   .profit-row .num:nth-child(2),
   .profit-head span:nth-child(2) { display: none; }
 }
+
+/* ==========================================================================
+   VIEW · LUCROS
+   ========================================================================== */
+.metrics--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1200px) {
+  .metrics--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+  .metrics--4 { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+@media (max-width: 380px) {
+  .metrics--4 { grid-template-columns: 1fr; }
+}
+
+[data-hide-values="true"] .card--percent .card-value .num { filter: none !important; }
+
+/* ---------- tabela de produtos ---------- */
+.profit-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.profit-row {
+  display: grid;
+  grid-template-columns: 1.8fr .8fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-radius: var(--r-sm);
+  transition: background .18s var(--ease);
+  font-size: 13px;
+}
+.profit-row:not(.profit-head):hover { background: rgba(255, 255, 255, .025); }
+[data-theme="claro"] .profit-row:not(.profit-head):hover { background: rgba(0, 0, 0, .025); }
+.profit-row + .profit-row { border-top: 1px solid var(--line); }
+
+.profit-head {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--fg-3);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.profit-name {
+  color: var(--fg);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profit-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profit-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.profit-badge--hw { background: rgba(var(--c-rgb-2), .12); color: var(--accent-2); }
+.profit-badge--sw { background: rgba(34, 197, 94, .12); color: var(--pos); }
+.profit-badge--sv { background: rgba(244, 114, 182, .12); color: #f472b6; }
+
+.profit-row .num {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--fg-2);
+  text-align: right;
+  transition: filter .25s var(--ease);
+}
+.profit-row .num.positive { color: var(--pos); }
+.profit-row .num.pct { color: var(--fg); font-weight: 500; }
+
+[data-hide-values="true"] .profit-row .num:not(.pct) { filter: blur(6px); }
+[data-hide-values="true"] .profit-row:hover .num:not(.pct) { filter: none; }
+
+@media (max-width: 640px) {
+  .profit-row { grid-template-columns: 1.5fr .8fr 1fr .8fr; font-size: 12px; }
+  .profit-row .num:nth-child(4),
+  .profit-head span:nth-child(4) { display: none; }
+  .profit-badge { display: none; }
+}
+
+/* ---------- margem por categoria ---------- */
+.margin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+.margin-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.margin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.margin-label {
+  color: var(--fg-2);
+  font-weight: 500;
+}
+.margin-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.margin-value small {
+  color: var(--fg-3);
+  font-weight: 400;
+  font-size: 11px;
+  margin-left: 6px;
+}
+.margin-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.margin-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .8s cubic-bezier(.16, 1, .3, 1);
+}
+.margin-fill.tone-hw { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.margin-fill.tone-sw { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.margin-fill.tone-sv { background: linear-gradient(90deg, #ec4899, #f472b6); }

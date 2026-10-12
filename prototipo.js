@@ -1360,11 +1360,9 @@
     formatMoney,
     setPresentation,
     updateGoalUI,
-    // SPA
     setView,
     registrarView,
     getView: () => viewAtual,
-    // helpers para outras views
     getCurrency: currentCurrency,
     getPeriod: () => periodoAtual,
     getSelectedBranches,
@@ -1372,5 +1370,6 @@
     MULT: MULTIPLICADOR,
     animateMoney,
     animateNumber,
+    getDataset: () => getDados(periodoAtual),
   };
 })();

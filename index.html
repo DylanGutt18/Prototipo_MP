@@ -216,7 +216,7 @@
 
     </section>
 
-        <!-- ====================================================
+    <!-- ====================================================
          VIEW · LUCROS
          ==================================================== -->
     <section class="view" data-view="lucros" hidden>
@@ -305,7 +305,17 @@
 
       <section class="analytics">
 
-        <article class="panel panel--donut" id="panelCustosLucros">
+        <article class="panel panel--donut">
+          <header class="panel-head">
+            <div>
+              <h3>Composição da receita</h3>
+              <p class="panel-sub">Hardware · Software · Serviços</p>
+            </div>
+          </header>
+          <div class="donut-host" id="donutMixReceita"></div>
+        </article>
+
+        <article class="panel panel--donut">
           <header class="panel-head">
             <div>
               <h3>Composição dos custos</h3>
@@ -315,17 +325,7 @@
           <div class="donut-host" id="donutCustosLucros"></div>
         </article>
 
-        <article class="panel panel--donut" id="panelOrigemLucros">
-          <header class="panel-head">
-            <div>
-              <h3>Origem do lucro</h3>
-              <p class="panel-sub">Recorrente vs. novos</p>
-            </div>
-          </header>
-          <div class="donut-host" id="donutOrigemLucros"></div>
-        </article>
-
-        <article class="panel panel--bars" id="panelBarrasLucros">
+        <article class="panel panel--bars">
           <header class="panel-head">
             <div>
               <h3>Lucro no período</h3>
@@ -337,11 +337,35 @@
 
       </section>
 
+      <section class="analytics analytics--2">
+
+        <article class="panel panel--donut">
+          <header class="panel-head">
+            <div>
+              <h3>Origem do lucro</h3>
+              <p class="panel-sub">Recorrente vs. pontual</p>
+            </div>
+          </header>
+          <div class="donut-host" id="donutOrigemLucros"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <div>
+              <h3>Margem por categoria</h3>
+              <p class="panel-sub">Lucro / receita em cada linha</p>
+            </div>
+          </header>
+          <div class="margin-list" id="margemCategorias"></div>
+        </article>
+
+      </section>
+
       <section class="panel">
         <header class="panel-head">
           <div>
-            <h3>Top produtos por lucro</h3>
-            <p class="panel-sub">Ordenado por contribuição</p>
+            <h3>Produtos e serviços</h3>
+            <p class="panel-sub">Ordenado por contribuição ao lucro</p>
           </div>
         </header>
         <div class="profit-table" id="tabelaLucros"></div>

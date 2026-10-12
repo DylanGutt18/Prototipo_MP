@@ -1265,3 +1265,90 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   .profit-row { grid-template-columns: 1.6fr 1fr 1fr; font-size: 12px; }
   .profit-row .num:last-child { display: none; }
 }
+
+/* ==========================================================================
+   VIEW · LUCROS
+   ========================================================================== */
+.metrics--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1200px) {
+  .metrics--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+  .metrics--4 { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+@media (max-width: 380px) {
+  .metrics--4 { grid-template-columns: 1fr; }
+}
+
+/* Card de percentual não é borrado em "ocultar valores" */
+[data-hide-values="true"] .card--percent .card-value .num { filter: none !important; }
+
+/* ---------- tabela de lucros ---------- */
+.profit-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.profit-row {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-radius: var(--r-sm);
+  transition: background .18s var(--ease);
+  font-size: 13px;
+}
+.profit-row:not(.profit-head):hover { background: rgba(255, 255, 255, .025); }
+[data-theme="claro"] .profit-row:not(.profit-head):hover { background: rgba(0, 0, 0, .025); }
+.profit-row + .profit-row { border-top: 1px solid var(--line); }
+
+.profit-head {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--fg-3);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.profit-name {
+  color: var(--fg);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profit-name::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.profit-row .num {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--fg-2);
+  text-align: right;
+  transition: filter .25s var(--ease);
+}
+.profit-row .num.positive { color: var(--pos); }
+.profit-row .num.pct { color: var(--fg); font-weight: 500; }
+
+[data-hide-values="true"] .profit-row .num:not(.pct) { filter: blur(6px); }
+[data-hide-values="true"] .profit-row:hover .num:not(.pct) { filter: none; }
+
+@media (max-width: 640px) {
+  .profit-row { grid-template-columns: 1.5fr 1fr 0.8fr; font-size: 12px; }
+  .profit-row .num:nth-child(2),
+  .profit-head span:nth-child(2) { display: none; }
+}

@@ -59,24 +59,20 @@
      Somatório de `share` = 1 (garante que soma dos produtos = receita total).
   */
   const PRODUTOS = [
-    // Hardware
     { name: 'Notebook Pro 15',    tipo: 'hw', share: 0.0775, cmv: 0.375 },
     { name: 'Monitor 27"',        tipo: 'hw', share: 0.0581, cmv: 0.4375 },
     { name: 'Teclado Mecânico',   tipo: 'hw', share: 0.0472, cmv: 0.3333 },
     { name: 'Headset Bluetooth',  tipo: 'hw', share: 0.0327, cmv: 0.4074 },
     { name: 'Mouse Ergo',         tipo: 'hw', share: 0.0206, cmv: 0.3529 },
-    // Software · mensalidades
     { name: 'Plano Enterprise',   tipo: 'sw', share: 0.2542, cmv: 0.20 },
     { name: 'Plano Pro',          tipo: 'sw', share: 0.1598, cmv: 0.25 },
     { name: 'Plano Starter',      tipo: 'sw', share: 0.0871, cmv: 0.2917 },
     { name: 'Add-on Analytics',   tipo: 'sw', share: 0.0581, cmv: 0.1875 },
     { name: 'Add-on Suporte 24/7',tipo: 'sw', share: 0.0363, cmv: 0.40 },
-    // Serviços
     { name: 'Consultoria',        tipo: 'sv', share: 0.1090, cmv: 0.40 },
     { name: 'Treinamento',        tipo: 'sv', share: 0.0594, cmv: 0.3265 },
   ];
 
-  /* ===== CATEGORIAS DE CUSTO (mesmas da Visão Geral) ===== */
   const CUSTOS_MIX = [
     { label: 'Marketing',      pct: 0.35, color: '--chart-1' },
     { label: 'Operacional',    pct: 0.30, color: '--chart-2' },
@@ -95,18 +91,16 @@
     sv: { nome: 'Serviço',  cor: '#f472b6',               classe: 'profit-badge--sv', tone: 'tone-sv' },
   };
 
-  /* ===== FONTE DE DADOS ===== */
   function getDataset() {
     const d = Dash.getDataset();
     if (!d) return null;
     return {
       labels: d.labels,
-      receita: d.receita,                 // já filtrado por filial + período
-      custos: d.despesa,                  // despesa da Visão Geral = custo aqui
+      receita: d.receita,
+      custos: d.despesa,
       lucro: d.receita.map((r, i) => r - d.despesa[i]),
       variacaoReceita: d.variacaoReceita,
       variacaoCustos:  d.variacaoDespesa,
-      // margem/lucro usam a mesma base, mantemos os deltas existentes
       variacaoLucro:  d.variacaoReceita - d.variacaoDespesa + 1.2,
       variacaoMargem: d.variacaoReceita * 0.15,
     };
@@ -115,10 +109,10 @@
   function getProdutos() {
     const d = getDataset();
     if (!d) return [];
-    const receitaTotal = d.receita.reduce((s, v) => s + v, 0); // milhares
+    const receitaTotal = d.receita.reduce((s, v) => s + v, 0);
 
     return PRODUTOS.map(p => {
-      const receita = receitaTotal * p.share * 1000;   // R$
+      const receita = receitaTotal * p.share * 1000;
       const custo   = receita * p.cmv;
       const lucro   = receita - custo;
       const margem  = receita > 0 ? (lucro / receita) * 100 : 0;
@@ -126,7 +120,6 @@
     });
   }
 
-  /* ===== AGREGAÇÃO DE LUCRO (barras) ===== */
   function aggregateLucro(lucro) {
     const p = Dash.getPeriod();
 
@@ -158,7 +151,6 @@
     return out;
   }
 
-  /* ===== LABEL DE FILIAIS ===== */
   function atualizarFiliaisLabel() {
     if (!elFiliaisLbl) return;
     const sel = Dash.getSelectedBranches();
@@ -168,7 +160,6 @@
     else elFiliaisLbl.textContent = sel.map(k => Dash.FILIAIS[k].nome).join(' + ');
   }
 
-  /* ===== BADGE ===== */
   function atualizarBadge(card, variacao, invertido) {
     if (!card) return;
     const badge = card.querySelector('.card-badge');
@@ -187,7 +178,6 @@
     if (valEl) valEl.textContent = Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
   }
 
-  /* ===== CARDS ===== */
   function renderCards() {
     const d = getDataset();
     if (!d) return;
@@ -213,7 +203,6 @@
     atualizarBadge(elCardMargem,  d.variacaoMargem,  false);
   }
 
-  /* ===== GRÁFICO DE LINHA ===== */
   const Chart = (() => {
     if (!elChartHost) return { render() {} };
     let chartData = null;
@@ -427,7 +416,6 @@
     return { render };
   })();
 
-  /* ===== DONUT ===== */
   function Donut(host, data, totalBRL) {
     if (!host) return;
     const size = 140, stroke = 18;
@@ -448,7 +436,10 @@
     data.forEach((d) => {
       const len = (d.value / totalPct) * circ;
       const midAngle = (-90 + ((acc + len / 2) / circ) * 360) * Math.PI / 180;
+
       const g = svgEl('g', { class: 'donut-slice-group' });
+      const inner = svgEl('g', { class: 'donut-slice-visual' });
+
       const slice = svgEl('circle', {
         cx, cy, r, fill: 'none',
         stroke: `var(${d.color})`,
@@ -458,12 +449,14 @@
         transform: `rotate(-90 ${cx} ${cy})`,
         class: 'donut-slice',
       });
-      g.appendChild(slice);
+
+      inner.appendChild(slice);
+      g.appendChild(inner);
       svg.appendChild(g);
 
       const actualBRL = (d.value / totalPct) * totalBRL;
       groups.push({
-        g, slice, midAngle, actualBRL,
+        g, inner, slice, midAngle, actualBRL,
         pct: Math.round((d.value / totalPct) * 100),
         label: d.label,
       });
@@ -481,22 +474,20 @@
     host.innerHTML = '';
     host.appendChild(svg);
 
-    let activeIdx = -1;
-
-    function activate(i) {
-      activeIdx = i;
+    /* ---------- Destaque por hover (sem clique) ---------- */
+    function highlight(i) {
       groups.forEach((grp, idx) => {
         const isActive = idx === i;
         const dimmed = i !== -1 && !isActive;
         if (isActive) {
           const dx = Math.cos(grp.midAngle) * 9;
           const dy = Math.sin(grp.midAngle) * 9;
-          grp.g.style.transform = `translate(${dx}px, ${dy}px)`;
-          grp.g.style.opacity = '1';
+          grp.inner.style.transform = `translate(${dx}px, ${dy}px)`;
+          grp.inner.style.opacity = '1';
           grp.slice.setAttribute('stroke-width', String(stroke + 2));
         } else {
-          grp.g.style.transform = 'translate(0, 0)';
-          grp.g.style.opacity = dimmed ? '0.35' : '1';
+          grp.inner.style.transform = 'translate(0, 0)';
+          grp.inner.style.opacity = dimmed ? '0.35' : '1';
           grp.slice.setAttribute('stroke-width', String(stroke));
         }
       });
@@ -510,16 +501,8 @@
     }
 
     groups.forEach((grp, i) => {
-      grp.g.addEventListener('click', (e) => {
-        e.stopPropagation();
-        activate(activeIdx === i ? -1 : i);
-      });
-      grp.g.addEventListener('mouseenter', () => {
-        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke + 2));
-      });
-      grp.g.addEventListener('mouseleave', () => {
-        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke));
-      });
+      grp.g.addEventListener('mouseenter', () => highlight(i));
+      grp.g.addEventListener('mouseleave', () => highlight(-1));
     });
 
     const legend = document.createElement('div');
@@ -527,13 +510,13 @@
     groups.forEach((grp, i) => {
       const item = document.createElement('span');
       item.innerHTML = `<i style="background:var(${data[i].color})"></i>${grp.label}<b>${grp.pct}%</b>`;
-      item.addEventListener('click', () => activate(activeIdx === i ? -1 : i));
+      item.addEventListener('mouseenter', () => highlight(i));
+      item.addEventListener('mouseleave', () => highlight(-1));
       legend.appendChild(item);
     });
     host.appendChild(legend);
   }
 
-  /* ===== BARRAS ===== */
   function Bars(host, data) {
     if (!host) return;
 
@@ -685,7 +668,6 @@
     host.appendChild(wrap);
   }
 
-  /* ===== MARGEM POR CATEGORIA ===== */
   function renderMargens() {
     if (!elMargemList) return;
     const produtos = getProdutos();
@@ -724,7 +706,6 @@
     });
   }
 
-  /* ===== TABELA DE PRODUTOS ===== */
   function renderTable() {
     if (!elTableHost) return;
     const produtos = [...getProdutos()].sort((a, b) => b.lucro - a.lucro);
@@ -758,7 +739,6 @@
     elTableHost.innerHTML = head + rows;
   }
 
-  /* ===== RENDER ===== */
   function renderAll() {
     atualizarFiliaisLabel();
     renderCards();
@@ -771,7 +751,6 @@
 
     Chart.render();
 
-    // Mix de receita (Hardware / Software / Serviços)
     const produtos = getProdutos();
     const mixMap = { hw: 0, sw: 0, sv: 0 };
     produtos.forEach(p => { mixMap[p.tipo] += p.receita; });
@@ -782,7 +761,6 @@
     ];
     Donut(elDonutMix, mixData, receitaTotal);
 
-    // Custos por categoria (mesmas proporções da Visão Geral)
     const custosData = CUSTOS_MIX.map(c => ({
       label: c.label,
       value: Math.round(c.pct * 100),
@@ -790,7 +768,6 @@
     }));
     Donut(elDonutCustos, custosData, custosTotal);
 
-    // Origem do lucro
     const origemData = ORIGEM_MIX.map(o => ({
       label: o.label,
       value: Math.round(o.pct * 100),
@@ -798,17 +775,21 @@
     }));
     Donut(elDonutOrigem, origemData, lucroTotal);
 
-    // Barras de lucro
     Bars(elBarHost, aggregateLucro(d.lucro));
 
     renderMargens();
     renderTable();
+
+    // Gera o resumo após as animações
+    setTimeout(() => window.Insights?.render('lucros'), 450);
   }
 
   Dash.registrarView('lucros', { onShow: renderAll });
   if (Dash.getView() === 'lucros') requestAnimationFrame(renderAll);
 
   document.addEventListener('settings:change', () => {
-    if (Dash.getView() === 'lucros') renderAll();
+    if (Dash.getView() === 'lucros') {
+      renderAll();
+    }
   });
 })();

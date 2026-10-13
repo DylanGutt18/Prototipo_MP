@@ -39,20 +39,12 @@
   const elTableHost     = $('#tabelaEstoque');
   const elFiliaisLbl    = $('#filiaisLabelEstoque');
 
-  /* ===== SKUs — valores idênticos ao ESTOQUE da Visão Geral =====
-     Notebook 15: 3/40 · Headset: 5/35 · Monitor 27": 8/50
-     Teclado: 12/60 · Mouse: 22/80
-     Extra: outros SKUs em bom estado.
-  */
   const SKUS = [
-    // Críticos (mesma qtd da Visão Geral)
     { code: 'HW-NB-015',   name: 'Notebook Pro 15',     cat: 'Notebooks',    qty: 3,  min: 12, unit: 5800 },
     { code: 'HW-HS-BT',    name: 'Headset Bluetooth',   cat: 'Áudio',        qty: 5,  min: 10, unit: 210 },
     { code: 'HW-MN-027',   name: 'Monitor 27"',         cat: 'Monitores',    qty: 8,  min: 18, unit: 1650 },
-    // Baixos (mesma qtd da Visão Geral)
     { code: 'HW-KB-MEC',   name: 'Teclado Mecânico',    cat: 'Periféricos',  qty: 12, min: 24, unit: 280 },
     { code: 'HW-MS-ERG',   name: 'Mouse Ergo',          cat: 'Periféricos',  qty: 22, min: 30, unit: 130 },
-    // Em estoque normal
     { code: 'HW-SSD-1T',   name: 'SSD Externo 1TB',     cat: 'Armazenam.',   qty: 45, min: 15, unit: 620 },
     { code: 'HW-WC-HD',    name: 'Webcam Full HD',      cat: 'Periféricos',  qty: 38, min: 20, unit: 340 },
     { code: 'HW-CH-ERG',   name: 'Cadeira Ergonômica',  cat: 'Mobiliário',   qty: 24, min: 8,  unit: 1450 },
@@ -106,7 +98,6 @@
   }
 
   function getSkus() {
-    // Não aplica peso de filial — inventário é consolidado, igual à Visão Geral
     return SKUS.map(s => {
       const total = s.qty * s.unit;
       const status = statusOf(s.qty, s.min);
@@ -127,7 +118,6 @@
     const saidaDiaria = saidasPeriodo / mov.dias;
     const cobertura = saidaDiaria > 0 ? totalQty / saidaDiaria : 0;
 
-    // Giro: saída anual / estoque médio — normalizado para 4-5x/ano
     const saidaAnual = saidasPeriodo * (365 / mov.dias);
     const estoqueMedio = totalQty / 2;
     const giro = estoqueMedio > 0 ? saidaAnual / estoqueMedio / Math.max(1, totalQty / 300) : 0;
@@ -183,7 +173,6 @@
     atualizarBadge(elCardCobertura, v.cobertura, true);
   }
 
-  /* ===== GRÁFICO DIVERGENTE ===== */
   const Chart = (() => {
     if (!elChartHost) return { render() {} };
 
@@ -363,7 +352,6 @@
     return { render };
   })();
 
-  /* ===== CURVA ABC ===== */
   function renderAbc() {
     if (!elAbcHost) return;
     const skus = [...getSkus()].sort((a, b) => b.total - a.total);
@@ -389,9 +377,25 @@
 
     elAbcHost.innerHTML = `
       <div class="abc-stack">
-        <div class="abc-segment abc-a" style="width:${pctA}%"></div>
-        <div class="abc-segment abc-b" style="width:${pctB}%"></div>
-        <div class="abc-segment abc-c" style="width:${pctC}%"></div>
+        <div class="abc-segment abc-a"
+             data-classe="A"
+             data-pct="${pctA.toFixed(1).replace('.', ',')}"
+             data-skus="${classes.A.skus}"
+             data-valor="${Dash.formatMoney(classes.A.valor)}"
+             style="width:${pctA}%"></div>
+        <div class="abc-segment abc-b"
+             data-classe="B"
+             data-pct="${pctB.toFixed(1).replace('.', ',')}"
+             data-skus="${classes.B.skus}"
+             data-valor="${Dash.formatMoney(classes.B.valor)}"
+             style="width:${pctB}%"></div>
+        <div class="abc-segment abc-c"
+             data-classe="C"
+             data-pct="${pctC.toFixed(1).replace('.', ',')}"
+             data-skus="${classes.C.skus}"
+             data-valor="${Dash.formatMoney(classes.C.valor)}"
+             style="width:${pctC}%"></div>
+        <div class="abc-tooltip" id="abcTooltip" role="tooltip"></div>
       </div>
       <div class="abc-legend">
         <div class="abc-leg-item">
@@ -414,6 +418,52 @@
         </div>
       </div>
     `;
+
+    /* ---------- Tooltip da Curva ABC ---------- */
+    const abcStack = elAbcHost.querySelector('.abc-stack');
+    const abcTooltip = elAbcHost.querySelector('#abcTooltip');
+
+    if (abcStack && abcTooltip) {
+      const segments = abcStack.querySelectorAll('.abc-segment');
+
+      segments.forEach(seg => {
+        seg.addEventListener('mouseenter', () => {
+          const classe = seg.dataset.classe;
+          const pct = seg.dataset.pct;
+          const skus = seg.dataset.skus;
+          const valor = seg.dataset.valor;
+
+          abcTooltip.innerHTML = `
+            <div class="tt-label">Classe ${classe}</div>
+            <div class="tt-row">
+              <span>Participação</span>
+              <span class="tt-val">${pct}%</span>
+            </div>
+            <div class="tt-row">
+              <span>SKUs</span>
+              <span class="tt-val">${skus}</span>
+            </div>
+            <div class="tt-row">
+              <span>Valor</span>
+              <span class="tt-val">${valor}</span>
+            </div>
+          `;
+
+          // Posiciona o tooltip no centro horizontal do segmento
+          const stackRect = abcStack.getBoundingClientRect();
+          const segRect = seg.getBoundingClientRect();
+          const centerX = segRect.left - stackRect.left + segRect.width / 2;
+
+          abcTooltip.style.left = centerX + 'px';
+          abcTooltip.style.top = '0px';
+          abcTooltip.classList.add('is-visible');
+        });
+
+        seg.addEventListener('mouseleave', () => {
+          abcTooltip.classList.remove('is-visible');
+        });
+      });
+    }
   }
 
   function renderArmazens() {
@@ -538,6 +588,23 @@
     renderArmazens();
     renderCategorias();
     renderTable();
+
+    // Aguarda o card de SKUs terminar de animar
+    const esperar = (el, ms = 2000) => new Promise(resolve => {
+      const t0 = performance.now();
+      const check = () => {
+        if (el?.dataset.current !== undefined && performance.now() - t0 > 750) {
+          resolve();
+        } else if (performance.now() - t0 > ms) {
+          resolve();
+        } else {
+          requestAnimationFrame(check);
+        }
+      };
+      check();
+    });
+
+    esperar(elSkusVal).then(() => window.Insights?.render('estoque'));
   }
 
   Dash.registrarView('estoque', { onShow: renderAll });

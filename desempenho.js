@@ -54,7 +54,6 @@
   const elRankingList       = $('#rankingDesempenho');
   const elFiliaisLbl        = $('#filiaisLabelDesempenho');
 
-  /* ===== DATASETS POR PERÍODO ===== */
   const DATA = {
     '30d': {
       labels: ['S1', 'S2', 'S3', 'S4'],
@@ -111,7 +110,6 @@
 
   const RADAR_AXES = ['Velocidade', 'Qualidade', 'Atendimento', 'Conversão', 'Retenção', 'Margem'];
 
-  /* ===== HELPERS ===== */
   function getData() {
     return DATA[Dash.getPeriod()] || DATA['1a'];
   }
@@ -148,7 +146,6 @@
     if (valEl) valEl.textContent = Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
   }
 
-  /* ===== CARDS ===== */
   function renderCards() {
     const d = getData();
 
@@ -159,11 +156,10 @@
 
     atualizarBadge(elCardNps,           d.variacoes.nps, false);
     atualizarBadge(elCardSla,           d.variacoes.sla, false);
-    atualizarBadge(elCardTempo,         d.variacoes.tempo, true); // cair é bom
+    atualizarBadge(elCardTempo,         d.variacoes.tempo, true);
     atualizarBadge(elCardProdutividade, d.variacoes.produtividade, false);
   }
 
-  /* ===== GRÁFICO DE LINHA ===== */
   const Chart = (() => {
     if (!elChartHost) return { render() {} };
     let chartData = null;
@@ -271,7 +267,7 @@
         const pS = chartData.ptsS[idx];
         const label = chartData.labels[idx];
         const p = Dash.getPeriod();
-        const prefix = p === '1a' ? 'Mês' : p === '90d' ? 'Semana' : 'Semana';
+        const prefix = p === '1a' ? 'Mês' : 'Semana';
 
         cursor.style.left = pS[0] + '%';
 
@@ -361,7 +357,6 @@
     return { render };
   })();
 
-  /* ===== GAUGE SEMICIRCULAR ===== */
   function renderGauge() {
     if (!elGaugeHost) return;
     const d = getData();
@@ -372,7 +367,6 @@
     const cx = W / 2, cy = H - 10;
     const r = 80;
 
-    // Caminho semicircular (180°)
     const startAngle = Math.PI;
     const endAngle = 0;
     const x1 = cx + r * Math.cos(startAngle);
@@ -410,7 +404,6 @@
     });
   }
 
-  /* ===== RADAR ===== */
   function renderRadar() {
     if (!elRadarHost) return;
     const d = getData();
@@ -429,7 +422,6 @@
 
     const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}` });
 
-    // grid (4 níveis)
     [0.25, 0.5, 0.75, 1].forEach(nivel => {
       const pts = [];
       for (let i = 0; i < N; i++) pts.push(pointAt(i, nivel));
@@ -437,7 +429,6 @@
       svg.appendChild(svgEl('path', { d, class: 'radar-grid' }));
     });
 
-    // eixos
     for (let i = 0; i < N; i++) {
       const p = pointAt(i, 1);
       svg.appendChild(svgEl('line', {
@@ -446,7 +437,6 @@
       }));
     }
 
-    // polígono de valores
     const valPts = values.map((v, i) => pointAt(i, Math.max(0.05, v / 100)));
     const valD = valPts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ') + ' Z';
     const polygon = svgEl('path', {
@@ -455,14 +445,12 @@
     });
     svg.appendChild(polygon);
 
-    // pontos
     valPts.forEach(p => {
       svg.appendChild(svgEl('circle', {
         cx: p[0], cy: p[1], r: '4', class: 'radar-dot',
       }));
     });
 
-    // labels
     RADAR_AXES.forEach((label, i) => {
       const p = pointAt(i, 1.18);
       const t = svgEl('text', {
@@ -484,7 +472,6 @@
     });
   }
 
-  /* ===== DESEMPENHO POR FILIAL ===== */
   function renderFiliais() {
     if (!elFiliaisList) return;
     const d = getData();
@@ -518,7 +505,6 @@
     });
   }
 
-  /* ===== RANKING ===== */
   function renderRanking() {
     if (!elRankingList) return;
     const d = getData();
@@ -535,7 +521,6 @@
     `).join('');
   }
 
-  /* ===== RENDER ===== */
   function renderAll() {
     atualizarFiliaisLabel();
     renderCards();
@@ -544,6 +529,9 @@
     renderRadar();
     renderFiliais();
     renderRanking();
+
+    // Gera o resumo após as animações
+    setTimeout(() => window.Insights?.render('desempenho'), 450);
   }
 
   Dash.registrarView('desempenho', { onShow: renderAll });

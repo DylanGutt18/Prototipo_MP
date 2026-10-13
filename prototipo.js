@@ -187,8 +187,14 @@
     if (changed) window.scrollTo({ top: 0, behavior: 'smooth' });
 
     requestAnimationFrame(() => {
-      if (nome === 'geral') renderAll(periodoAtual);
-      else viewHandlers[nome]?.onShow?.();
+      if (nome === 'geral') {
+        renderAll(periodoAtual);
+        // Gera o resumo depois que os cards terminarem de animar
+        setTimeout(() => window.Insights?.render('geral'), 400);
+      } else {
+        viewHandlers[nome]?.onShow?.();
+        setTimeout(() => window.Insights?.render(nome), 400);
+      }
     });
   }
 
@@ -662,7 +668,13 @@
     data.forEach((d) => {
       const len = (d.value / totalPct) * circ;
       const midAngle = (-90 + ((acc + len / 2) / circ) * 360) * Math.PI / 180;
+
+      // <g> externo = hitbox fixa (não se move)
       const g = svgEl('g', { class: 'donut-slice-group' });
+
+      // <g> interno = é este que "descola" no hover
+      const inner = svgEl('g', { class: 'donut-slice-visual' });
+
       const slice = svgEl('circle', {
         cx, cy, r, fill: 'none',
         stroke: `var(${d.color})`,
@@ -672,12 +684,14 @@
         transform: `rotate(-90 ${cx} ${cy})`,
         class: 'donut-slice',
       });
-      g.appendChild(slice);
+
+      inner.appendChild(slice);
+      g.appendChild(inner);
       svg.appendChild(g);
 
       const actualBRL = (d.value / totalPct) * totalBRL;
       groups.push({
-        g, slice, midAngle, actualBRL,
+        g, inner, slice, midAngle, actualBRL,
         pct: Math.round((d.value / totalPct) * 100),
         label: d.label,
       });
@@ -695,25 +709,26 @@
     host.innerHTML = '';
     host.appendChild(svg);
 
-    let activeIdx = -1;
-
-    function activate(i) {
-      activeIdx = i;
+    /* ---------- Destaque por hover (sem clique) ---------- */
+    function highlight(i) {
       groups.forEach((grp, idx) => {
         const isActive = idx === i;
         const dimmed = i !== -1 && !isActive;
+
+        // Aplica o transform no <g> INTERNO — a hitbox (<g> externo) fica parada
         if (isActive) {
           const dx = Math.cos(grp.midAngle) * 9;
           const dy = Math.sin(grp.midAngle) * 9;
-          grp.g.style.transform = `translate(${dx}px, ${dy}px)`;
-          grp.g.style.opacity = '1';
+          grp.inner.style.transform = `translate(${dx}px, ${dy}px)`;
+          grp.inner.style.opacity = '1';
           grp.slice.setAttribute('stroke-width', String(stroke + 2));
         } else {
-          grp.g.style.transform = 'translate(0, 0)';
-          grp.g.style.opacity = dimmed ? '0.35' : '1';
+          grp.inner.style.transform = 'translate(0, 0)';
+          grp.inner.style.opacity = dimmed ? '0.35' : '1';
           grp.slice.setAttribute('stroke-width', String(stroke));
         }
       });
+
       if (i === -1) {
         labelEl.textContent = 'Total';
         valueEl.textContent = formatMoney(totalBRL);
@@ -724,16 +739,8 @@
     }
 
     groups.forEach((grp, i) => {
-      grp.g.addEventListener('click', (e) => {
-        e.stopPropagation();
-        activate(activeIdx === i ? -1 : i);
-      });
-      grp.g.addEventListener('mouseenter', () => {
-        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke + 2));
-      });
-      grp.g.addEventListener('mouseleave', () => {
-        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke));
-      });
+      grp.g.addEventListener('mouseenter', () => highlight(i));
+      grp.g.addEventListener('mouseleave', () => highlight(-1));
     });
 
     const legend = document.createElement('div');
@@ -741,7 +748,8 @@
     groups.forEach((grp, i) => {
       const item = document.createElement('span');
       item.innerHTML = `<i style="background:var(${data[i].color})"></i>${grp.label}<b>${grp.pct}%</b>`;
-      item.addEventListener('click', () => activate(activeIdx === i ? -1 : i));
+      item.addEventListener('mouseenter', () => highlight(i));
+      item.addEventListener('mouseleave', () => highlight(-1));
       legend.appendChild(item);
     });
     host.appendChild(legend);
@@ -1128,6 +1136,9 @@
     TopList('topProdutos', d.topProdutos);
     StockList('estoqueCritico', ESTOQUE);
     updateGoalUI();
+
+    // Gera o resumo após as animações
+    setTimeout(() => window.Insights?.render('geral'), 450);
   }
 
   /* ===== PERÍODO ===== */
@@ -1137,8 +1148,12 @@
     $$('.range-picker .chip').forEach(c =>
       c.classList.toggle('active', c.dataset.period === p)
     );
-    if (viewAtual === 'geral') renderAll(p);
-    else viewHandlers[viewAtual]?.onShow?.();
+    if (viewAtual === 'geral') {
+      renderAll(p);
+    } else {
+      viewHandlers[viewAtual]?.onShow?.();
+      setTimeout(() => window.Insights?.render(viewAtual), 450);
+    }
   }
 
   $$('.range-picker .chip').forEach(chip => {
@@ -1312,8 +1327,12 @@
     if (perChanged) {
       setPeriodo(s.defaultPeriod);
     } else if (currChanged || filialChanged) {
-      if (viewAtual === 'geral') renderAll(periodoAtual);
-      else viewHandlers[viewAtual]?.onShow?.();
+      if (viewAtual === 'geral') {
+        renderAll(periodoAtual);
+      } else {
+        viewHandlers[viewAtual]?.onShow?.();
+        setTimeout(() => window.Insights?.render(viewAtual), 450);
+      }
     } else if (goalChanged) {
       updateGoalUI();
     }
@@ -1343,7 +1362,6 @@
     setPresentation(s.presentation);
     updateGoalUI();
 
-    /* Sincroniza UI com a view inicial */
     setView(viewAtual);
   };
 

@@ -55,10 +55,6 @@
   const elTableHost       = $('#tabelaDemanda');
   const elFiliaisLbl      = $('#filiaisLabelDemanda');
 
-  /* ===== PRODUTOS (mesmos do profits.js) =====
-     ticket = valor médio por pedido (em R$)
-     tipo   = hw | sw | sv
-  */
   const PRODUTOS = [
     { name: 'Notebook Pro 15',     tipo: 'hw', share: 0.0775, ticket: 8500 },
     { name: 'Monitor 27"',         tipo: 'hw', share: 0.0581, ticket: 2400 },
@@ -80,7 +76,6 @@
     sv: { nome: 'Serviço',  cor: '#f472b6',         classe: 'profit-badge--sv', tone: 'tone-sv' },
   };
 
-  /* Distribuição de origem (fixa) */
   const ORIGEM_MIX = [
     { label: 'Inbound',      pct: 0.42, color: '--chart-1' },
     { label: 'Indicação',    pct: 0.24, color: '--chart-2' },
@@ -88,42 +83,32 @@
     { label: 'Mídia paga',   pct: 0.13, color: '--chart-4' },
   ];
 
-  /* Tipo de demanda */
   const TIPO_DEMANDA = [
     { label: 'Renovação',     pct: 0.45, color: '--chart-2', classe: 'rn' },
     { label: 'Novo negócio',  pct: 0.32, color: '--chart-1', classe: 'nv' },
     { label: 'Upsell',        pct: 0.23, color: '--chart-3', classe: 'up' },
   ];
 
-  /* Filiais — mesma proporção da receita */
   const FILIAL_WEIGHTS = {
     campinas: 0.42,
     jundiai:  0.31,
     saopaulo: 0.27,
   };
 
-  /* Ticket médio de referência (R$ por pedido) — constante */
   const TICKET_MEDIO = 472;
 
-  /* Variações por período (fictícias, apenas para os badges) */
   const VARIACOES = {
     '30d': { pedidos: 5.2, assinaturas: 9.1, conversao: 0.3, ticket: 1.4 },
     '90d': { pedidos: 8.1, assinaturas: 11.6, conversao: 0.6, ticket: 2.1 },
     '1a':  { pedidos: 6.4, assinaturas: 12.4, conversao: 0.4, ticket: 2.8 },
   };
 
-  /* ===== FONTE DE DADOS ===== */
   function getDataset() {
     const d = Dash.getDataset();
     if (!d) return null;
 
-    // Receita em R$ (array) — já filtrada por filial + período
     const receitaR = d.receita.map(v => v * 1000);
-
-    // Pedidos por label — receita / ticket médio
     const pedidos = receitaR.map(r => Math.round(r / TICKET_MEDIO));
-
-    // Meta = média dos pedidos × 1.02 (linha quase reta, sutil acima)
     const media = pedidos.reduce((s, v) => s + v, 0) / pedidos.length;
     const meta = pedidos.map(() => Math.round(media * 1.02));
 
@@ -143,7 +128,7 @@
     return PRODUTOS.map(p => {
       const receita = receitaTotal * p.share;
       const units   = Math.max(1, Math.round(receita / p.ticket));
-      const lucro   = receita * 0.55; // margem fictícia coerente
+      const lucro   = receita * 0.55;
       return {
         name: p.name,
         tipo: p.tipo,
@@ -169,12 +154,11 @@
       produtos.filter(p => p.tipo === 'sw').reduce((s, p) => s + p.units, 0) * 0.27
     );
     const ticket = pedidos > 0 ? receita / pedidos : 0;
-    const conversao = 4.2; // fixa, vem dos leads fictícios
+    const conversao = 4.2;
 
     return { pedidos, assinaturas, ticket, conversao };
   }
 
-  /* ===== LABEL DE FILIAIS ===== */
   function atualizarFiliaisLabel() {
     if (!elFiliaisLbl) return;
     const sel = Dash.getSelectedBranches();
@@ -184,7 +168,6 @@
     else elFiliaisLbl.textContent = sel.map(k => Dash.FILIAIS[k].nome).join(' + ');
   }
 
-  /* ===== BADGE ===== */
   function atualizarBadge(card, variacao, invertido = false) {
     if (!card) return;
     const badge = card.querySelector('.card-badge');
@@ -203,7 +186,6 @@
     if (valEl) valEl.textContent = Math.abs(variacao).toFixed(1).replace('.', ',') + '%';
   }
 
-  /* ===== CARDS ===== */
   function renderCards() {
     const t = getTotais();
     const p = Dash.getPeriod();
@@ -220,7 +202,6 @@
     atualizarBadge(elCardTicket,      v.ticket,      false);
   }
 
-  /* ===== GRÁFICO ===== */
   const Chart = (() => {
     if (!elChartHost) return { render() {} };
     let chartData = null;
@@ -272,7 +253,6 @@
         area.style.opacity = '1';
       });
 
-      // Meta (linha pontilhada)
       const metaLine = svgEl('path', {
         d: smoothPath(ptsM),
         fill: 'none',
@@ -286,7 +266,6 @@
       });
       svg.appendChild(metaLine);
 
-      // Pedidos (linha sólida)
       const line = svgEl('path', {
         d: smoothPath(ptsP),
         fill: 'none',
@@ -442,7 +421,6 @@
     return { render };
   })();
 
-  /* ===== DONUT ===== */
   function Donut(host, data, totalBRL) {
     if (!host) return;
     const size = 140, stroke = 18;
@@ -463,7 +441,10 @@
     data.forEach((d) => {
       const len = (d.value / totalPct) * circ;
       const midAngle = (-90 + ((acc + len / 2) / circ) * 360) * Math.PI / 180;
+
       const g = svgEl('g', { class: 'donut-slice-group' });
+      const inner = svgEl('g', { class: 'donut-slice-visual' });
+
       const slice = svgEl('circle', {
         cx, cy, r, fill: 'none',
         stroke: `var(${d.color})`,
@@ -473,12 +454,14 @@
         transform: `rotate(-90 ${cx} ${cy})`,
         class: 'donut-slice',
       });
-      g.appendChild(slice);
+
+      inner.appendChild(slice);
+      g.appendChild(inner);
       svg.appendChild(g);
 
       const actualBRL = (d.value / totalPct) * totalBRL;
       groups.push({
-        g, slice, midAngle, actualBRL,
+        g, inner, slice, midAngle, actualBRL,
         pct: Math.round((d.value / totalPct) * 100),
         label: d.label,
       });
@@ -496,22 +479,20 @@
     host.innerHTML = '';
     host.appendChild(svg);
 
-    let activeIdx = -1;
-
-    function activate(i) {
-      activeIdx = i;
+    /* ---------- Destaque por hover (sem clique) ---------- */
+    function highlight(i) {
       groups.forEach((grp, idx) => {
         const isActive = idx === i;
         const dimmed = i !== -1 && !isActive;
         if (isActive) {
           const dx = Math.cos(grp.midAngle) * 9;
           const dy = Math.sin(grp.midAngle) * 9;
-          grp.g.style.transform = `translate(${dx}px, ${dy}px)`;
-          grp.g.style.opacity = '1';
+          grp.inner.style.transform = `translate(${dx}px, ${dy}px)`;
+          grp.inner.style.opacity = '1';
           grp.slice.setAttribute('stroke-width', String(stroke + 2));
         } else {
-          grp.g.style.transform = 'translate(0, 0)';
-          grp.g.style.opacity = dimmed ? '0.35' : '1';
+          grp.inner.style.transform = 'translate(0, 0)';
+          grp.inner.style.opacity = dimmed ? '0.35' : '1';
           grp.slice.setAttribute('stroke-width', String(stroke));
         }
       });
@@ -525,16 +506,8 @@
     }
 
     groups.forEach((grp, i) => {
-      grp.g.addEventListener('click', (e) => {
-        e.stopPropagation();
-        activate(activeIdx === i ? -1 : i);
-      });
-      grp.g.addEventListener('mouseenter', () => {
-        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke + 2));
-      });
-      grp.g.addEventListener('mouseleave', () => {
-        if (activeIdx === -1) grp.slice.setAttribute('stroke-width', String(stroke));
-      });
+      grp.g.addEventListener('mouseenter', () => highlight(i));
+      grp.g.addEventListener('mouseleave', () => highlight(-1));
     });
 
     const legend = document.createElement('div');
@@ -542,13 +515,13 @@
     groups.forEach((grp, i) => {
       const item = document.createElement('span');
       item.innerHTML = `<i style="background:var(${data[i].color})"></i>${grp.label}<b>${grp.pct}%</b>`;
-      item.addEventListener('click', () => activate(activeIdx === i ? -1 : i));
+      item.addEventListener('mouseenter', () => highlight(i));
+      item.addEventListener('mouseleave', () => highlight(-1));
       legend.appendChild(item);
     });
     host.appendChild(legend);
   }
 
-  /* ===== BARRAS VERTICAIS ===== */
   function Bars(host, data) {
     if (!host) return;
 
@@ -700,7 +673,6 @@
     host.appendChild(wrap);
   }
 
-  /* ===== LISTA DE FILIAIS ===== */
   function renderFiliais(produtos) {
     if (!elListFiliais) return;
     const total = produtos.reduce((s, p) => s + p.units, 0);
@@ -738,7 +710,6 @@
     });
   }
 
-  /* ===== TABELA ===== */
   function renderTable() {
     if (!elTableHost) return;
     const produtos = [...getProdutos()].sort((a, b) => b.units - a.units);
@@ -772,7 +743,6 @@
     elTableHost.innerHTML = head + rows;
   }
 
-  /* ===== RENDER ===== */
   function renderAll() {
     atualizarFiliaisLabel();
     renderCards();
@@ -785,7 +755,6 @@
 
     Chart.render();
 
-    // Donut · Origem dos pedidos
     const origemData = ORIGEM_MIX.map(o => ({
       label: o.label,
       value: Math.round(o.pct * 100),
@@ -793,7 +762,6 @@
     }));
     Donut(elDonutOrigem, origemData, totalPedidos);
 
-    // Donut · Tipo de demanda
     const tipoData = TIPO_DEMANDA.map(t => ({
       label: t.label,
       value: Math.round(t.pct * 100),
@@ -801,7 +769,6 @@
     }));
     Donut(elDonutTipo, tipoData, totalPedidos);
 
-    // Barras · Pedidos por categoria
     const byTipo = aggregateByTipo(produtos);
     Bars(elBarHost, [
       { label: 'Software', value: byTipo.sw },
@@ -811,9 +778,11 @@
 
     renderFiliais(produtos);
     renderTable();
+
+    // Gera o resumo após as animações
+    setTimeout(() => window.Insights?.render('demanda'), 450);
   }
 
-  /* ===== REGISTRO NA SPA ===== */
   Dash.registrarView('demanda', { onShow: renderAll });
 
   if (Dash.getView() === 'demanda') {

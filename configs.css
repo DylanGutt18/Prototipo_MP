@@ -467,7 +467,38 @@ body.settings-open .settings-overlay {
 }
 
 /* ---------- footer ---------- */
-.settings-footer { padding-top: 8px; }
+.settings-footer {
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-footer .btn-ghost { width: 100%; justify-content: center; }
+
+/* ---------- botão de logout ---------- */
+.btn-logout {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--neg);
+  border: 1px solid rgba(244, 63, 94, .25);
+  border-radius: var(--r);
+  background: rgba(244, 63, 94, .06);
+  transition: all .2s var(--ease);
+}
+.btn-logout:hover {
+  color: #fff;
+  background: var(--neg);
+  border-color: var(--neg);
+  box-shadow: 0 8px 20px -10px rgba(244, 63, 94, .8);
+}
+.btn-logout svg { flex-shrink: 0; }
 
 .btn-ghost {
   display: inline-flex;

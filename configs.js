@@ -129,6 +129,11 @@
     save(); apply();
   });
 
+  $('#logoutBtn')?.addEventListener('click', () => {
+    setPanel(false);
+    window.Auth?.logout?.();
+  });
+
   window.Settings = {
     get:    (k) => (k ? state[k] : { ...state }),
     set:    (k, v) => {

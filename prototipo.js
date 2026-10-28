@@ -1459,3 +1459,11 @@
     getDataset: () => getDados(periodoAtual),
   };
 })();
+
+  document.addEventListener('auth:login', () => {
+    setView('geral');
+    // garante que o painel reflita o estado atual das configurações
+    const s = window.Settings?.get?.() || {};
+    if (s.defaultPeriod) setPeriodo(s.defaultPeriod);
+    updateGoalUI();
+  });

@@ -2063,3 +2063,11 @@ body.menu-open .overlay { opacity: 1; pointer-events: auto; }
   text-transform: uppercase;
   letter-spacing: .08em;
 }
+
+/* ==========================================================================
+   LOGIN · bloqueio do painel
+   ========================================================================== */
+body.login-open > *:not(.login-screen):not(.settings):not(.settings-overlay):not(.toast-host) {
+  /* enquanto o login estiver aberto, tudo o mais fica "congelado" visualmente */
+  pointer-events: none;
+}

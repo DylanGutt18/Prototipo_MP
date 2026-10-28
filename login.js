@@ -96,6 +96,10 @@
   }
 
   function bind(screen) {
+    // Evita registrar listeners duplicados se bind() for chamado mais de uma vez
+    if (screen.dataset.bound === 'true') return;
+    screen.dataset.bound = 'true';
+
     const form = screen.querySelector('#loginForm');
     const userInput = screen.querySelector('#loginUser');
     const passInput = screen.querySelector('#loginPass');
@@ -117,6 +121,24 @@
     function hideError() {
       errorBox.classList.remove('is-visible');
     }
+
+    // Restaura o estado do formulário (usado ao reabrir após logout)
+    function resetForm() {
+      busy = false;
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        <span>Entrar</span>
+      `;
+      hideError();
+    }
+
+    // Expõe para show() poder chamar
+    screen._resetForm = resetForm;
 
     [userInput, passInput].forEach(inp => {
       inp.addEventListener('input', hideError);
@@ -189,11 +211,14 @@
     const userInput = screen.querySelector('#loginUser');
     const passInput = screen.querySelector('#loginPass');
     if (userInput) userInput.value = '';
-    if (passInput) passInput.value = '';
-    screen.querySelector('#loginError')?.classList.remove('is-visible');
+    if (passInput) {
+      passInput.value = '';
+      passInput.type = 'password';
+    }
+    // Restaura o botão "Entrar" e libera o estado de busy
+    screen._resetForm?.();
     setTimeout(() => userInput?.focus(), 80);
   }
-
   function hide() {
     const screen = document.getElementById('loginScreen');
     if (screen) screen.hidden = true;

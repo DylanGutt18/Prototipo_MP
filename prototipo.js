@@ -328,8 +328,16 @@
   $$('.pop-item[data-action]').forEach(item => {
     item.addEventListener('click', e => {
       e.stopPropagation();
-      mostrarToast(ACOES_AJUDA[item.dataset.action] || `Ação: ${item.dataset.action}`);
+      const action = item.dataset.action;
       fecharPops();
+
+      if (action === 'docs') {
+        // Chama a API do docs.js diretamente (não depende de bubbling)
+        window.Docs?.open?.();
+        return;
+      }
+
+      mostrarToast(ACOES_AJUDA[action] || `Ação: ${action}`);
     });
   });
 

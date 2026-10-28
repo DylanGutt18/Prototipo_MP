@@ -328,8 +328,16 @@
   $$('.pop-item[data-action]').forEach(item => {
     item.addEventListener('click', e => {
       e.stopPropagation();
-      mostrarToast(ACOES_AJUDA[item.dataset.action] || `Ação: ${item.dataset.action}`);
+      const action = item.dataset.action;
       fecharPops();
+
+      if (action === 'docs') {
+        // Chama a API do docs.js diretamente (não depende de bubbling)
+        window.Docs?.open?.();
+        return;
+      }
+
+      mostrarToast(ACOES_AJUDA[action] || `Ação: ${action}`);
     });
   });
 
@@ -1180,19 +1188,67 @@
 
   /* ===== BUSCA ===== */
   const SEARCH_TARGETS = [
-    { id: 'contentHeader', label: 'Visão Geral', keywords: ['visão', 'geral', 'resumo', 'home'] },
-    { id: 'cardReceita', label: 'Receita do período', keywords: ['receita', 'entrada', 'ganho'] },
-    { id: 'cardDespesa', label: 'Despesa do período', keywords: ['despesa', 'gasto', 'saída'] },
-    { id: 'cardMeta', label: 'Meta de receita', keywords: ['meta', 'objetivo', 'goal'] },
-    { id: 'panelGrafico', label: 'Receita × Despesa', keywords: ['gráfico', 'comparativo', 'linha'] },
-    { id: 'panelCategorias', label: 'Gastos por categoria', keywords: ['categoria', 'gastos', 'marketing', 'salários', 'operacional', 'infraestrutura'] },
-    { id: 'panelOrigem', label: 'Origem da receita', keywords: ['origem', 'recorrente', 'novos'] },
-    { id: 'panelBarras', label: 'Receita no período', keywords: ['barras', 'receita'] },
-    { id: 'panelEstoque', label: 'Estoque crítico', keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
-    { id: 'panelTop', label: 'Top produtos', keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
+    /* ===== VIEW · VISÃO GERAL ===== */
+    { id: 'contentHeader', view: 'geral', label: 'Visão Geral', keywords: ['visão', 'geral', 'resumo', 'home', 'overview'] },
+    { id: 'cardReceita', view: 'geral', label: 'Receita do período', keywords: ['receita', 'entrada', 'ganho', 'faturamento'] },
+    { id: 'cardDespesa', view: 'geral', label: 'Despesa do período', keywords: ['despesa', 'gasto', 'saída', 'custo'] },
+    { id: 'cardMeta', view: 'geral', label: 'Meta de receita', keywords: ['meta', 'objetivo', 'goal'] },
+    { id: 'panelGrafico', view: 'geral', label: 'Receita × Despesa', keywords: ['gráfico', 'comparativo', 'linha', 'receita', 'despesa'] },
+    { id: 'panelCategorias', view: 'geral', label: 'Gastos por categoria', keywords: ['categoria', 'gastos', 'marketing', 'salários', 'operacional', 'infraestrutura'] },
+    { id: 'panelOrigem', view: 'geral', label: 'Origem da receita', keywords: ['origem', 'recorrente', 'novos', 'donut'] },
+    { id: 'panelBarras', view: 'geral', label: 'Receita no período', keywords: ['barras', 'receita', 'trimestre'] },
+    { id: 'panelEstoque', view: 'geral', label: 'Estoque crítico', keywords: ['estoque', 'produto', 'inventário', 'crítico'] },
+    { id: 'panelTop', view: 'geral', label: 'Top produtos', keywords: ['top', 'produtos', 'vendas', 'mais vendidos'] },
     ...['Notebook Pro 15', 'Monitor 27"', 'Teclado Mec.', 'Headset BT', 'Mouse Ergo'].map(name => ({
-      id: 'panelTop', label: name, keywords: [name.toLowerCase()], child: name,
+      id: 'panelTop', view: 'geral', label: name, keywords: [name.toLowerCase()], child: name,
     })),
+
+    /* ===== VIEW · LUCROS ===== */
+    { id: 'lucrosCardReceita', view: 'lucros', label: 'Lucros · Receita bruta', keywords: ['lucro', 'receita bruta', 'faturamento'] },
+    { id: 'lucrosCardCustos', view: 'lucros', label: 'Lucros · Custos totais', keywords: ['lucro', 'custo', 'custos', 'despesa'] },
+    { id: 'lucrosCardLucro', view: 'lucros', label: 'Lucros · Lucro líquido', keywords: ['lucro', 'lucro líquido', 'líquido'] },
+    { id: 'lucrosCardMargem', view: 'lucros', label: 'Lucros · Margem líquida', keywords: ['lucro', 'margem', 'percentual'] },
+    { id: 'chartLucros', view: 'lucros', label: 'Lucros · Receita × Custos × Lucro', keywords: ['lucro', 'gráfico', 'receita', 'custos', 'evolução'] },
+    { id: 'donutMixReceita', view: 'lucros', label: 'Lucros · Composição da receita', keywords: ['lucro', 'composição', 'receita', 'hardware', 'software', 'serviços', 'donut'] },
+    { id: 'donutCustosLucros', view: 'lucros', label: 'Lucros · Composição dos custos', keywords: ['lucro', 'composição', 'custos', 'marketing', 'salários', 'donut'] },
+    { id: 'barLucros', view: 'lucros', label: 'Lucros · Lucro no período', keywords: ['lucro', 'barras', 'trimestre', 'período'] },
+    { id: 'donutOrigemLucros', view: 'lucros', label: 'Lucros · Origem do lucro', keywords: ['lucro', 'origem', 'recorrente', 'pontual', 'donut'] },
+    { id: 'margemCategorias', view: 'lucros', label: 'Lucros · Margem por categoria', keywords: ['lucro', 'margem', 'categoria'] },
+    { id: 'tabelaLucros', view: 'lucros', label: 'Lucros · Produtos e serviços', keywords: ['lucro', 'produtos', 'serviços', 'tabela'] },
+
+    /* ===== VIEW · DEMANDA ===== */
+    { id: 'demandaCardPedidos', view: 'demanda', label: 'Demanda · Pedidos totais', keywords: ['demanda', 'pedidos', 'volume'] },
+    { id: 'demandaCardAssinaturas', view: 'demanda', label: 'Demanda · Novas assinaturas', keywords: ['demanda', 'assinaturas', 'contratos'] },
+    { id: 'demandaCardConversao', view: 'demanda', label: 'Demanda · Taxa de conversão', keywords: ['demanda', 'conversão', 'leads', 'clientes'] },
+    { id: 'demandaCardTicket', view: 'demanda', label: 'Demanda · Ticket médio', keywords: ['demanda', 'ticket', 'médio'] },
+    { id: 'chartDemanda', view: 'demanda', label: 'Demanda · Pedidos × Meta', keywords: ['demanda', 'gráfico', 'pedidos', 'meta'] },
+    { id: 'donutOrigemDemanda', view: 'demanda', label: 'Demanda · Origem dos pedidos', keywords: ['demanda', 'origem', 'inbound', 'indicação', 'donut'] },
+    { id: 'donutTipoDemanda', view: 'demanda', label: 'Demanda · Tipo de demanda', keywords: ['demanda', 'tipo', 'renovação', 'novo negócio', 'upsell', 'donut'] },
+    { id: 'barCategoriaDemanda', view: 'demanda', label: 'Demanda · Pedidos por categoria', keywords: ['demanda', 'categoria', 'hardware', 'software', 'serviços', 'barras'] },
+    { id: 'demandaFiliais', view: 'demanda', label: 'Demanda · Demanda por filial', keywords: ['demanda', 'filial', 'distribuição'] },
+    { id: 'tabelaDemanda', view: 'demanda', label: 'Demanda · Top produtos por volume', keywords: ['demanda', 'produtos', 'volume', 'tabela'] },
+
+    /* ===== VIEW · ESTOQUE ===== */
+    { id: 'estoqueCardSkus', view: 'estoque', label: 'Estoque · SKUs ativos', keywords: ['estoque', 'sku', 'itens'] },
+    { id: 'estoqueCardValor', view: 'estoque', label: 'Estoque · Valor em estoque', keywords: ['estoque', 'valor', 'capital'] },
+    { id: 'estoqueCardGiro', view: 'estoque', label: 'Estoque · Giro de estoque', keywords: ['estoque', 'giro'] },
+    { id: 'estoqueCardCobertura', view: 'estoque', label: 'Estoque · Cobertura', keywords: ['estoque', 'cobertura', 'dias'] },
+    { id: 'chartEstoque', view: 'estoque', label: 'Estoque · Movimentação', keywords: ['estoque', 'movimentação', 'entradas', 'saídas', 'gráfico'] },
+    { id: 'abcEstoque', view: 'estoque', label: 'Estoque · Curva ABC', keywords: ['estoque', 'abc', 'curva', 'concentração'] },
+    { id: 'armazemEstoque', view: 'estoque', label: 'Estoque · Estoque por armazém', keywords: ['estoque', 'armazém', 'distribuição', 'filial'] },
+    { id: 'categoriaEstoque', view: 'estoque', label: 'Estoque · Status por categoria', keywords: ['estoque', 'categoria', 'ocupação'] },
+    { id: 'tabelaEstoque', view: 'estoque', label: 'Estoque · Inventário detalhado', keywords: ['estoque', 'inventário', 'sku', 'tabela'] },
+
+    /* ===== VIEW · DESEMPENHO ===== */
+    { id: 'desempCardNps', view: 'desempenho', label: 'Desempenho · NPS', keywords: ['desempenho', 'nps', 'satisfação'] },
+    { id: 'desempCardSla', view: 'desempenho', label: 'Desempenho · SLA cumprido', keywords: ['desempenho', 'sla', 'prazo'] },
+    { id: 'desempCardTempo', view: 'desempenho', label: 'Desempenho · Tempo de resposta', keywords: ['desempenho', 'tempo', 'resposta'] },
+    { id: 'desempCardProdutividade', view: 'desempenho', label: 'Desempenho · Produtividade', keywords: ['desempenho', 'produtividade', 'meta'] },
+    { id: 'chartDesempenho', view: 'desempenho', label: 'Desempenho · Evolução dos indicadores', keywords: ['desempenho', 'gráfico', 'sla', 'nps', 'produtividade'] },
+    { id: 'gaugeDesempenho', view: 'desempenho', label: 'Desempenho · Score geral', keywords: ['desempenho', 'score', 'gauge'] },
+    { id: 'radarDesempenho', view: 'desempenho', label: 'Desempenho · Competências', keywords: ['desempenho', 'radar', 'competências'] },
+    { id: 'filiaisDesempenho', view: 'desempenho', label: 'Desempenho · Desempenho por filial', keywords: ['desempenho', 'filial', 'score'] },
+    { id: 'rankingDesempenho', view: 'desempenho', label: 'Desempenho · Ranking de equipes', keywords: ['desempenho', 'ranking', 'equipes', 'performers'] },
   ];
 
   const searchInput = $('#searchInput');
@@ -1222,12 +1278,20 @@
     lista.forEach(t => {
       const btn = document.createElement('button');
       btn.className = 'search-result';
+      const VIEW_LABEL = {
+        geral: 'Visão Geral',
+        lucros: 'Lucros',
+        demanda: 'Demanda',
+        estoque: 'Estoque',
+        desempenho: 'Desempenho',
+      };
       btn.innerHTML = `
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/>
         </svg>
-        <span>${t.label}</span>
+        <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.label}</span>
+        <small style="color:var(--fg-3);font-family:var(--mono);font-size:10px;flex-shrink:0">${VIEW_LABEL[t.view] || ''}</small>
       `;
       btn.addEventListener('click', () => irPara(t));
       searchResults.appendChild(btn);
@@ -1241,15 +1305,27 @@
   }
 
   function irPara(t) {
-    const target = document.getElementById(t.id);
-    if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      target.classList.remove('is-highlighted');
-      void target.offsetWidth;
-      target.classList.add('is-highlighted');
-      setTimeout(() => target.classList.remove('is-highlighted'), 2100);
-    }, 420);
+    const navegar = () => {
+      const target = document.getElementById(t.id);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        target.classList.remove('is-highlighted');
+        void target.offsetWidth;
+        target.classList.add('is-highlighted');
+        setTimeout(() => target.classList.remove('is-highlighted'), 2100);
+      }, 420);
+    };
+
+    // Se o alvo está em outra view, troca de view primeiro
+    if (t.view && t.view !== viewAtual) {
+      setView(t.view);
+      // Aguarda a view renderizar antes de rolar até o elemento
+      setTimeout(navegar, 500);
+    } else {
+      navegar();
+    }
+
     fecharResultados();
     searchInput.value = '';
     searchInput.blur();
@@ -1391,3 +1467,11 @@
     getDataset: () => getDados(periodoAtual),
   };
 })();
+
+  document.addEventListener('auth:login', () => {
+    setView('geral');
+    // garante que o painel reflita o estado atual das configurações
+    const s = window.Settings?.get?.() || {};
+    if (s.defaultPeriod) setPeriodo(s.defaultPeriod);
+    updateGoalUI();
+  });
